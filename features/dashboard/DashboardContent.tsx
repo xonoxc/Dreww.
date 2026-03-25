@@ -1,0 +1,132 @@
+"use client"
+
+import { useProfile } from "@/features/auth/hooks/useProfile"
+import {
+   useGolfScores,
+   useLastFiveScores,
+   useAverageScore,
+   useAddGolfScore,
+   useDeleteGolfScore,
+} from "@/features/golf/hooks/useGolfScores"
+import { AddScoreForm } from "@/features/golf/components/AddScoreForm"
+import { ScoresList } from "@/features/golf/components/ScoresList"
+import { useAuth } from "@/features"
+import { Navbar, StatCard, DrawSection, CharityImpact } from "./components"
+import { fromPromise } from "neverthrow"
+
+export function DashboardContent() {
+   const { user, loading: authLoading } = useAuth()
+   const { data: profile, isLoading: profileLoading } = useProfile()
+   const { data: scores } = useGolfScores()
+   const addScoreMutation = useAddGolfScore()
+   const deleteScoreMutation = useDeleteGolfScore()
+
+   const lastFiveScores = useLastFiveScores()
+   const averageScore = useAverageScore()
+
+   const handleAddScore = async (score: {
+      course_name: string
+      stableford_score: number
+      score_date: string
+      course_par?: number
+      notes?: string
+   }) => {
+      if (!user) return
+      const result = await fromPromise(
+         addScoreMutation.mutateAsync({
+            user_id: user.id,
+            course_name: score.course_name,
+            stableford_score: score.stableford_score,
+            score_date: score.score_date,
+            course_par: score.course_par ?? null,
+            notes: score.notes ?? null,
+         }),
+         err => err
+      )
+
+      if (result.isErr()) {
+         console.error("Failed to add score:", result.error)
+      }
+   }
+
+   const handleDeleteScore = async (scoreId: string) => {
+      await deleteScoreMutation.mutateAsync(scoreId)
+   }
+
+   if (authLoading) return <AuthLoadingFallback />
+
+   if (!user) return null
+
+   const bestScore =
+      scores && scores.length > 0 ? Math.max(...scores.map(s => s.stableford_score)) : 0
+
+   const stats = [
+      { label: "Average Score", value: averageScore, icon: "📊" },
+      { label: "Total Rounds", value: scores?.length ?? 0, icon: "🎯" },
+      { label: "Best Score", value: bestScore, icon: "🏆" },
+      { label: "Subscription", value: profile?.subscription_tier || "Free", icon: "⭐" },
+   ]
+
+   return (
+      <main className="min-h-screen bg-background">
+         <div className="fixed inset-0 grid-ambient pointer-events-none" />
+
+         <Navbar userName={profile?.full_name} />
+
+         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-8">
+            <div className="mb-8">
+               <h1 className="text-4xl font-heavy text-foreground mb-2">
+                  Welcome, {profile?.full_name?.split(" ")[0]}!
+               </h1>
+               <p className="text-muted-foreground font-normal-weight">
+                  Track your scores and compete in monthly draws
+               </p>
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-4 mb-8">
+               {stats.map((stat, i) => (
+                  <StatCard key={i} {...stat} />
+               ))}
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-8">
+               <div className="lg:col-span-1">
+                  <AddScoreForm onSubmit={handleAddScore} loading={addScoreMutation.isPending} />
+               </div>
+
+               <div className="lg:col-span-2">
+                  <div className="space-y-4">
+                     <div>
+                        <h2 className="text-2xl font-heavy text-foreground mb-2">Recent Scores</h2>
+                        <p className="text-sm text-muted-foreground font-normal-weight">
+                           Your last 5 rounds
+                        </p>
+                     </div>
+
+                     <ScoresList
+                        scores={lastFiveScores}
+                        onDelete={handleDeleteScore}
+                        loading={profileLoading}
+                     />
+                  </div>
+               </div>
+            </div>
+
+            <DrawSection />
+
+            <CharityImpact selectedCharityId={profile?.preferred_charity_id} />
+         </div>
+      </main>
+   )
+}
+
+function AuthLoadingFallback() {
+   return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+         <div className="text-center space-y-4">
+            <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-muted-foreground font-normal-weight">Loading...</p>
+         </div>
+      </div>
+   )
+}

@@ -1,0 +1,203 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Fintech/Web3 Dark Trader Aesthetic */
+:root {
+   /* Deep, premium pure black base */
+   --background: #121212;
+   --foreground: #ededed;
+
+   /* Slightly elevated pure neutral black for cards */
+   --card: #171717;
+   --card-foreground: #ededed;
+   --popover: #0a0a0a;
+   --popover-foreground: #ededed;
+
+   /* Signature Orange Accent */
+   --primary: #ff6b35;
+   --primary-foreground: #000000;
+   --accent: #ff6b35;
+   --accent-foreground: #000000;
+
+   /* Sharp, neutral highlights and borders */
+   --secondary: #141414;
+   --secondary-foreground: #d4d4d4;
+   --muted: #141414;
+   --muted-foreground: #8a8a8a;
+   --border: #262626;
+   --input: #0a0a0a;
+   --ring: #ff6b35;
+
+   /* Status */
+   --destructive: #ef4444;
+   --destructive-foreground: #fecaca;
+
+   /* Charts */
+   --chart-1: #ff6b35;
+   --chart-2: #00d4ff;
+   --chart-3: #00ff88;
+   --chart-4: #ffd700;
+   --chart-5: #9d4edd;
+
+   /* Brutalist structural vars */
+   --radius: 0rem; /* Switched to 0 for the sharp, blocky Rig aesthetic */
+
+   /* Sidebar matching deep black */
+   --sidebar: #000000;
+   --sidebar-foreground: #ededed;
+   --sidebar-primary: #ff6b35;
+   --sidebar-primary-foreground: #000000;
+   --sidebar-accent: #141414;
+   --sidebar-accent-foreground: #ff6b35;
+   --sidebar-border: #262626;
+   --sidebar-ring: #ff6b35;
+}
+
+.dark {
+   --background: #121212;
+   --foreground: #ededed;
+   --card: #0a0a0a;
+   --card-foreground: #ededed;
+   --popover: #0a0a0a;
+   --popover-foreground: #ededed;
+   --primary: #ff6b35;
+   --primary-foreground: #000000;
+   --secondary: #141414;
+   --secondary-foreground: #d4d4d4;
+   --muted: #141414;
+   --muted-foreground: #8a8a8a;
+   --accent: #ff6b35;
+   --accent-foreground: #000000;
+   --destructive: #ef4444;
+   --destructive-foreground: #fecaca;
+   --border: #262626;
+   --input: #0a0a0a;
+   --ring: #ff6b35;
+}
+
+@theme {
+   --font-sans: "Geist", "Geist Fallback";
+   --font-mono: "Geist Mono", "Geist Mono Fallback";
+
+   /* Mapping variables to Tailwind's theme system */
+   --color-background: var(--background);
+   --color-foreground: var(--foreground);
+   --color-card: var(--card);
+   --color-card-foreground: var(--card-foreground);
+   --color-primary: var(--primary);
+   --color-primary-foreground: var(--primary-foreground);
+   --color-accent: var(--accent);
+   --color-accent-foreground: var(--accent-foreground);
+   --color-border: var(--border);
+   --color-ring: var(--ring);
+
+   /* Radius scales */
+   --radius-sm: calc(var(--radius) - 4px);
+   --radius-md: calc(var(--radius) - 2px);
+   --radius-lg: var(--radius);
+   --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer components {
+   /* Fix 1: Standardize transitions */
+   .smooth-transition {
+      transition-property: all;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 300ms;
+   }
+
+   /* Fix 2: Explicit animation definitions to avoid @apply conflicts */
+   .fade-in {
+      animation: enter 300ms ease-out;
+      --tw-enter-opacity: 0;
+   }
+
+   .slide-up {
+      animation: enter 300ms ease-out;
+      --tw-enter-opacity: 0;
+      --tw-enter-translate-y: 0.5rem;
+   }
+
+   /* The missing ambient grid background */
+   .grid-ambient {
+      background-image:
+         linear-gradient(var(--border) 1px, transparent 1px),
+         linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+   }
+
+   /* Fix 3: Button & Card Hovers */
+   .button-hover {
+      transition-property: all;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 300ms;
+      &:hover {
+         opacity: 0.9;
+         box-shadow: 0 0 20px -5px rgba(255, 107, 53, 0.4);
+      }
+   }
+
+   .card-hover {
+      border: 1px solid var(--border);
+      transition-property: all;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 300ms;
+      &:hover {
+         border-color: var(--accent);
+         background-color: var(--secondary);
+      }
+   }
+
+   .glow-accent {
+      box-shadow: 0 0 30px -10px rgba(255, 107, 53, 0.2);
+   }
+}
+
+@layer base {
+   * {
+      @apply border-border;
+   }
+   body {
+      @apply bg-background text-foreground font-sans antialiased;
+   }
+}
+
+.cyber-bg {
+   /* The dark base layer */
+   background-color: #0a0a0a;
+   position: relative;
+   overflow: hidden;
+}
+
+.cyber-bg::before {
+   content: "";
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   opacity: 0.05; /* Keep it subtle */
+   pointer-events: none;
+   /* This creates the granular texture */
+   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3C%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.grid-ambient {
+   background-color: hsl(var(--background));
+   /* Faint technical grid lines */
+   background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.2) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.2) 1px, transparent 1px);
+   background-size: 40px 40px;
+}
+
+/* Optional: Add a subtle glow to the center */
+.grid-ambient::after {
+   content: "";
+   position: absolute;
+   inset: 0;
+   background: radial-gradient(circle at 50% 50%, transparent 0%, hsl(var(--background)) 80%);
+}
