@@ -231,9 +231,8 @@ The payment system is deferred per requirements. To integrate:
 
 ## License
 
-Private - Golf Fair Platform
+Private - Dreww.
 
 ## Support
 
-For issues or questions, contact the development team.
-# Dreww.
+For issues or questions, contact the developer.

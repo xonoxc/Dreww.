@@ -1,4 +1,4 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { apiClient } from "@/lib/supabase/client"
 
 export interface AuditLog {
@@ -24,8 +24,5 @@ const fetchAuditLogs = async (): Promise<AuditLog[]> => {
 }
 
 export function useAuditLogs() {
-   return useSuspenseQuery({
-      queryKey: AUDIT_LOGS_QUERY_KEY,
-      queryFn: fetchAuditLogs,
-   })
+   return useSuspenseQuery({ queryKey: AUDIT_LOGS_QUERY_KEY, queryFn: fetchAuditLogs })
 }

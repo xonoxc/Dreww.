@@ -4,7 +4,6 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/features"
 import { Button } from "@/components/ui/button"
-import { TIER_PRICING, TIER_FEATURES } from "@/lib/utils/razorpay"
 import { PaymentCheckout } from "@/features/payments/components/PaymentCheckout"
 
 interface PricingPlan {
@@ -60,7 +59,7 @@ export default function SubscriptionPage() {
    const router = useRouter()
    const { user, loading: authLoading } = useAuth()
    const [selectedTier, setSelectedTier] = useState<"premium" | "elite" | null>(null)
-   const [currentTier, setCurrentTier] = useState<string>("free")
+   const [currentTier, _] = useState<string>("free")
 
    if (authLoading) {
       return (
