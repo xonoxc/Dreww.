@@ -1,6 +1,7 @@
 "use client"
 
 import { useAuth } from "@/features"
+import SignOutBtn from "@/features/auth/components/SignOutBtn"
 
 interface NavbarProps {
    userName?: string | null
@@ -23,6 +24,8 @@ export function Navbar({ userName }: NavbarProps) {
                <span className="text-sm text-muted-foreground font-normal-weight">
                   {userName || user?.email}
                </span>
+
+               <SignOutBtn />
             </div>
          </div>
       </nav>

@@ -2,9 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/features"
+import { useAuth, useProfile, UpgradeModal } from "@/features"
 import { Button } from "@/components/ui/button"
-import { PaymentCheckout } from "@/features/payments/components/PaymentCheckout"
 
 interface PricingPlan {
    tier: "free" | "premium" | "elite"
@@ -58,8 +57,11 @@ const PLANS: PricingPlan[] = [
 export default function SubscriptionPage() {
    const router = useRouter()
    const { user, loading: authLoading } = useAuth()
+   const { data: profile } = useProfile()
    const [selectedTier, setSelectedTier] = useState<"premium" | "elite" | null>(null)
-   const [currentTier, _] = useState<string>("free")
+   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
+
+   const currentTier = profile?.subscription_tier || "free"
 
    if (authLoading) {
       return (
@@ -74,16 +76,13 @@ export default function SubscriptionPage() {
       return null
    }
 
-   const handlePaymentSuccess = (paymentId: string) => {
-      console.log("Payment successful:", paymentId)
-      // TODO: Update user's subscription tier in database via API call
-      // After payment verification, call /api/subscriptions/update with paymentId
-      // Then redirect to dashboard with success message
+   const handleUpgradeSuccess = () => {
       router.push("/dashboard?upgrade=success")
    }
 
-   const handlePaymentError = (error: string) => {
-      console.error("Payment error:", error)
+   const handlePlanClick = (tier: "premium" | "elite") => {
+      setSelectedTier(tier)
+      setUpgradeModalOpen(true)
    }
 
    return (
@@ -132,7 +131,7 @@ export default function SubscriptionPage() {
                         </Button>
                      ) : (
                         <Button
-                           onClick={() => setSelectedTier(plan.tier as "premium" | "elite")}
+                           onClick={() => handlePlanClick(plan.tier as "premium" | "elite")}
                            className={`w-full ${
                               plan.accent
                                  ? "bg-accent hover:bg-accent/90"
@@ -141,17 +140,6 @@ export default function SubscriptionPage() {
                         >
                            {currentTier === plan.tier ? "Current Plan" : "Upgrade"}
                         </Button>
-                     )}
-
-                     {selectedTier === plan.tier && (
-                        <div className="mt-6 pt-6 border-t border-border">
-                           <PaymentCheckout
-                              tier={plan.tier as "premium" | "elite"}
-                              currentTier={currentTier as "free" | "premium" | "elite"}
-                              onSuccess={handlePaymentSuccess}
-                              onError={handlePaymentError}
-                           />
-                        </div>
                      )}
                   </div>
                ))}
@@ -163,6 +151,14 @@ export default function SubscriptionPage() {
                </Button>
             </div>
          </div>
+
+         <UpgradeModal
+            open={upgradeModalOpen}
+            onOpenChange={setUpgradeModalOpen}
+            selectedTier={selectedTier || undefined}
+            currentCharityId={profile?.preferred_charity_id}
+            onSuccess={handleUpgradeSuccess}
+         />
       </main>
    )
 }

@@ -13,12 +13,7 @@ interface PaymentCheckoutProps {
    onError?: (error: string) => void
 }
 
-export function PaymentCheckout({
-   tier,
-   currentTier = "free",
-   onSuccess,
-   onError,
-}: PaymentCheckoutProps) {
+export function PaymentCheckout({ tier, onSuccess, onError }: PaymentCheckoutProps) {
    const [isProcessing, setIsProcessing] = useState(false)
    const { createOrder, verifyPayment, error, loading, resetState } = useRazorpay()
 

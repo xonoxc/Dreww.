@@ -1,13 +1,11 @@
 import crypto from "crypto"
 
-// Subscription tier pricing (in paise - 1 INR = 100 paise)
 export const TIER_PRICING = {
    free: 0,
-   premium: 49900, // ₹499 per month
-   elite: 99900, // ₹999 per month
+   premium: 49900,
+   elite: 99900,
 } as const
 
-// Tier features and benefits
 export const TIER_FEATURES = {
    free: {
       name: "Free",
@@ -47,7 +45,6 @@ export const TIER_FEATURES = {
    },
 } as const
 
-// Mock Razorpay API - simulates actual Razorpay responses
 export const createMockRazorpayOrder = (amount: number, currency: string = "INR") => {
    const orderId = `order_${crypto.randomBytes(8).toString("hex")}`
    return {
@@ -65,27 +62,31 @@ export const createMockRazorpayOrder = (amount: number, currency: string = "INR"
    }
 }
 
-// Mock payment verification
 export const verifyMockPayment = (
    orderId: string,
    paymentId: string,
    signature: string
 ): { valid: boolean; message: string } => {
-   // In mock mode, we verify signature format
    if (!orderId || !paymentId || !signature) {
-      return { valid: false, message: "Invalid payment details" }
+      return {
+         valid: false,
+         message: "Invalid payment details",
+      }
    }
 
-   // Simulate signature verification
-   // In real scenario, you'd use: crypto.createHmac('sha256', secret).update(body).digest('hex')
    if (signature.length < 10) {
-      return { valid: false, message: "Invalid signature format" }
+      return {
+         valid: false,
+         message: "Invalid signature format",
+      }
    }
 
-   return { valid: true, message: "Payment verified successfully" }
+   return {
+      valid: true,
+      message: "Payment verified successfully",
+   }
 }
 
-// Generate mock payment receipt
 export const generateMockPaymentReceipt = (
    orderId: string,
    paymentId: string,
@@ -127,10 +128,9 @@ export const generateMockPaymentReceipt = (
    }
 }
 
-// Calculate pricing breakdown
 export const getPricingBreakdown = (amount: number) => {
-   const fee = Math.floor(amount * 0.023) // 2.3% Razorpay fee
-   const tax = Math.floor(fee * 0.18) // 18% GST on fee
+   const fee = Math.floor(amount * 0.023)
+   const tax = Math.floor(fee * 0.18)
    const total = amount + fee + tax
 
    return {

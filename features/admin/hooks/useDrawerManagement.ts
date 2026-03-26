@@ -82,16 +82,20 @@ const createDraw = async (monthName: string, year: number, drawType: string) => 
 }
 
 const executeDraw = async (drawId: string) => {
-   const { data, error } = await apiClient.rpc("execute_monthly_draw", {
-      p_draw_id: drawId,
+   const response = await fetch(`/api/draws/${drawId}/execute`, {
+      method: "POST",
    })
 
-   if (error) throw error
+   let data
+   try {
+      data = await response.json()
+   } catch (e) {
+      throw new Error(`Server error: ${response.status}`)
+   }
 
-   await apiClient
-      .from("draws")
-      .update({ status: "drawn", drawn_at: new Date().toISOString() })
-      .eq("id", drawId)
+   if (!response.ok) {
+      throw new Error(data?.error || `Failed to execute draw: ${response.status}`)
+   }
 
    return data
 }

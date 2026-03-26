@@ -43,7 +43,8 @@ export const useAddGolfScore = () => {
          return data
       },
       onSuccess: newScore => {
-         queryClient.setQueryData<GolfScore[]>(GOLF_SCORES_QUERY_KEY, old => {
+         if (!user) return
+         queryClient.setQueryData<GolfScore[]>([...GOLF_SCORES_QUERY_KEY, user.id], old => {
             if (!old) return [newScore]
             return [newScore, ...old]
          })
@@ -53,6 +54,7 @@ export const useAddGolfScore = () => {
 
 export const useDeleteGolfScore = () => {
    const queryClient = useQueryClient()
+   const { user } = useAuth()
 
    return useMutation({
       mutationFn: async (scoreId: string) => {
@@ -62,7 +64,8 @@ export const useDeleteGolfScore = () => {
          return scoreId
       },
       onSuccess: (_data, scoreId) => {
-         queryClient.setQueryData<GolfScore[]>(GOLF_SCORES_QUERY_KEY, old => {
+         if (!user) return
+         queryClient.setQueryData<GolfScore[]>([...GOLF_SCORES_QUERY_KEY, user.id], old => {
             if (!old) return old
             return old.filter(s => s.id !== scoreId)
          })
