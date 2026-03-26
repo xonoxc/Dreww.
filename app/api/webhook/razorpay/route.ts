@@ -1,3 +1,4 @@
+import { TablesUpdate } from "@/lib/supabase/database.types"
 import { createServerSideClient } from "@/lib/supabase/server"
 import { fromPromise, fromThrowable } from "neverthrow"
 import { NextRequest, NextResponse } from "next/server"
@@ -40,9 +41,14 @@ export async function POST(request: NextRequest) {
    const payload = parseRes.value as WebhookPayload
    const { event } = payload
 
-   if (event !== "payment.captured") {
-      console.log("Unhandled event type", event)
-      return NextResponse.json({ received: true }, { status: 200 })
+   if (event === "payment.failed") {
+      console.log("Payment failed ::", event)
+      return NextResponse.json(
+         {
+            received: true,
+         },
+         { status: 200 }
+      )
    }
 
    const userId = payload.payload?.payment?.entity?.notes?.user_id
@@ -50,7 +56,12 @@ export async function POST(request: NextRequest) {
 
    if (!userId) {
       console.error("No user_id in payment notes")
-      return NextResponse.json({ error: "Missing user_id" }, { status: 400 })
+      return NextResponse.json(
+         {
+            error: "Missing user_id",
+         },
+         { status: 400 }
+      )
    }
 
    const supabase = await createServerSideClient()
@@ -59,27 +70,37 @@ export async function POST(request: NextRequest) {
    const subscriptionEnd = new Date()
    subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1)
 
+   const updatePlaylod: TablesUpdate<"profiles"> = {
+      subscription_status: "active",
+      subscription_tier: tier,
+      subscription_start_date: now.toISOString(),
+      subscription_end_date: subscriptionEnd.toISOString(),
+   }
+
    const updateRes = await fromPromise(
-      supabase
-         .from("profiles")
-         .update({
-            subscription_status: "active",
-            subscription_tier: tier,
-            subscription_start_date: now.toISOString(),
-            subscription_end_date: subscriptionEnd.toISOString(),
-         })
-         .eq("id", userId),
+      (supabase as any).from("profiles").update(updatePlaylod).eq("id", userId),
       err => err
    )
 
    if (updateRes.isErr()) {
       console.error("Error activating subscription:", updateRes.error)
-      return NextResponse.json({ error: "Failed to activate subscription" }, { status: 500 })
+      return NextResponse.json(
+         {
+            error: "Failed to activate subscription",
+         },
+         { status: 500 }
+      )
    }
 
-   console.log(`Subscription activated for user ${userId} with tier ${tier}`)
+   console.log("updateres response:", updateRes.value)
 
-   return NextResponse.json({ received: true }, { status: 200 })
+   console.log(`Subscription activated for user ${userId} with tier ${tier}`)
+   return NextResponse.json(
+      {
+         received: true,
+      },
+      { status: 200 }
+   )
 }
 
 function verifySignature(body: string, signature: string | null): boolean {

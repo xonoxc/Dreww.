@@ -63,7 +63,6 @@ export function ParticipateModal({
 
    const handleLeave = async () => {
       setError(null)
-
       try {
          await leaveMutation.mutateAsync(drawId)
          onOpenChange(false)
