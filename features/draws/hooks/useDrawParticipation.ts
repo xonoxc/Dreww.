@@ -22,7 +22,6 @@ export const useDrawParticipants = (drawId: string) => {
 
 export const useParticipateInDraw = () => {
    const queryClient = useQueryClient()
-   const { user } = useAuth()
 
    return useMutation({
       mutationFn: async (drawId: string) => {

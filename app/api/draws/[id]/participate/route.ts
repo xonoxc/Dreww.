@@ -7,10 +7,12 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    const adminClient = createAdminClient()
    const { id: drawId } = await params
 
+   console.log("[Participate] Starting for drawId:", drawId)
+
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
 
    if (userGetRes.isErr()) {
-      console.error("Error fetching current user:", userGetRes.error)
+      console.error("[Participate] Error fetching current user:", userGetRes.error)
       return NextResponse.json({ error: "something went wrong" }, { status: 500 })
    }
 
@@ -20,9 +22,11 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    } = userGetRes.value
 
    if (userError || !user) {
-      console.error("User error or no user:", userError)
+      console.error("[Participate] User error or no user:", userError)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
    }
+
+   console.log("[Participate] User:", user.id)
 
    const profileRes = await fromPromise(
       supabase
@@ -34,7 +38,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    )
 
    if (profileRes.isErr()) {
-      console.error("Error fetching profile:", profileRes.error)
+      console.error("[Participate] Error fetching profile:", profileRes.error)
       return NextResponse.json(
          {
             error: "something went wrong",
@@ -47,6 +51,8 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       subscription_tier: string | null
       subscription_status: string | null
    } | null
+
+   console.log("[Participate] Profile:", profile)
 
    if (profile?.subscription_tier === "free" || !profile?.subscription_tier) {
       return NextResponse.json(
@@ -71,11 +77,12 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    )
 
    if (drawRes.isErr()) {
-      console.error("Error fetching draw:", drawRes.error)
+      console.error("[Participate] Error fetching draw:", drawRes.error)
       return NextResponse.json({ error: "draw not found" }, { status: 404 })
    }
 
    const draw = drawRes.value.data as { status: string } | null
+   console.log("[Participate] Draw status:", draw?.status)
 
    if (draw?.status !== "open") {
       return NextResponse.json(
@@ -84,24 +91,38 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       )
    }
 
+   console.log(
+      "[Participate] Checking for existing participation for user:",
+      user.id,
+      "draw:",
+      drawId
+   )
    const existingRes = await fromPromise(
       (adminClient as any)
          .from("draw_participants")
-         .select("*")
+         .select("id")
          .eq("draw_id", drawId)
          .eq("user_id", user.id)
-         .eq("status", "active")
-         .single(),
+         .eq("status", "active"),
       err => err
    )
 
-   if (existingRes.isOk() && existingRes.value) {
+   console.log("[Participate] Existing check - isOk:", existingRes.isOk())
+
+   if (existingRes.isOk() && (existingRes.value as any)?.data?.length > 0) {
+      console.log("[Participate] User already has active participation in this draw")
       return NextResponse.json(
-         { error: "already_participating", message: "You are already participating in this draw" },
+         {
+            error: "already_participating",
+            message: "You are already participating in this draw",
+         },
          { status: 400 }
       )
    }
 
+   console.log("[Participate] No active participation found for this draw, proceeding...")
+
+   console.log("[Participate] Inserting new participation...")
    const participateRes = await fromPromise(
       (adminClient as any)
          .from("draw_participants")
@@ -112,11 +133,13 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    )
 
    if (participateRes.isErr()) {
-      console.error("Error participating in draw:", participateRes.error)
+      console.error("[Participate] Error participating in draw:", participateRes.error)
       return NextResponse.json({ error: "something went wrong" }, { status: 500 })
    }
 
    const participation = participateRes.value
+
+   console.log("[Participate] Success! Participation:", participation)
 
    return NextResponse.json(participation, { status: 201 })
 }

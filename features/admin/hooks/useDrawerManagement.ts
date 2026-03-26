@@ -108,15 +108,11 @@ const executeDraw = async (drawId: string) => {
       method: "POST",
    })
 
-   let data
-   try {
-      data = await response.json()
-   } catch (e) {
-      throw new Error(`Server error: ${response.status}`)
-   }
+   const data = await response.json()
 
    if (!response.ok) {
-      throw new Error(data?.error || `Failed to execute draw: ${response.status}`)
+      const message = data.message || data.error || `Failed to execute draw: ${response.status}`
+      throw new Error(message)
    }
 
    return data

@@ -146,7 +146,10 @@ function ProofDialog({
             {winner.status === "pending_verification" && winner.claimed_at && (
                <div className="flex gap-3 pt-4 border-t">
                   <Button
-                     onClick={() => onApprove(winner.id)}
+                     onClick={() => {
+                        onApprove(winner.id)
+                        onOpenChange()
+                     }}
                      disabled={verifyingId === winner.id || isVerifying}
                      className="flex-1 bg-green-500 hover:bg-green-600"
                   >
@@ -154,7 +157,10 @@ function ProofDialog({
                      Approve
                   </Button>
                   <Button
-                     onClick={() => onReject(winner.id)}
+                     onClick={() => {
+                        onReject(winner.id)
+                        onOpenChange()
+                     }}
                      disabled={verifyingId === winner.id || isVerifying}
                      variant="outline"
                      className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"

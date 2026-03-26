@@ -49,30 +49,28 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
    }
 
-   const drawRes = await fromPromise(
-      supabase
+   console.log("[Execute] Starting for drawId:", drawId)
+
+   // First check draw exists and is open
+   const drawCheckRes = await fromPromise(
+      adminClient
          .from("draws")
-         .select("*, draw_participants(*, profiles(*))")
+         .select("id, status, month, year, prize_pool, draw_type")
          .eq("id", drawId)
          .single(),
       err => err
    )
 
-   if (drawRes.isErr()) {
-      console.error("Error fetching draw:", drawRes.error)
-      return NextResponse.json(
-         {
-            error: "draw not found",
-         },
-         { status: 404 }
-      )
-   }
-
-   const draw = drawRes.value.data as any
-
-   if (!draw) {
+   if (drawCheckRes.isErr()) {
+      console.error("[Execute] Error fetching draw:", drawCheckRes.error)
       return NextResponse.json({ error: "draw not found" }, { status: 404 })
    }
+
+   const drawResponse = drawCheckRes.value as any
+   const draw = drawResponse.data
+
+   console.log("[Execute] Draw found:", draw)
+   console.log("[Execute] Draw.id:", draw?.id, "Draw.status:", draw?.status)
 
    if (draw.status !== "open") {
       return NextResponse.json(
@@ -81,9 +79,31 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       )
    }
 
-   const participants = draw.draw_participants?.filter((p: any) => p.status === "active") || []
+   // Query draw_participants table directly for this draw
+   console.log("[Execute] Fetching participants from draw_participants table for drawId:", drawId)
+   const participantsRes = await fromPromise(
+      (adminClient as any)
+         .from("draw_participants")
+         .select("id, draw_id, user_id, status, entered_at")
+         .eq("draw_id", drawId),
+      err => err
+   )
+
+   if (participantsRes.isErr()) {
+      console.error("[Execute] Error fetching participants:", participantsRes.error)
+      return NextResponse.json({ error: "error fetching participants" }, { status: 500 })
+   }
+
+   const participantsResponse = participantsRes.value as any
+   const allParticipants = participantsResponse.data || []
+   console.log("[Execute] All participants from table (any status):", allParticipants.length)
+   console.log("[Execute] All participants:", JSON.stringify(allParticipants))
+
+   const participants = allParticipants.filter((p: any) => p.status === "active")
+   console.log("[Execute] Active participants:", participants.length)
 
    if (participants.length < 1) {
+      console.log("[Execute] Not enough participants - found:", participants.length, "need: 3")
       return NextResponse.json(
          {
             error: "insufficient_participants",
@@ -95,8 +115,10 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
    const participantIds = participants.map((p: any) => p.user_id)
 
+   console.log("[Execute] Participant IDs:", participantIds)
+
    const scoresRes = await fromPromise(
-      supabase
+      (adminClient as any)
          .from("golf_scores")
          .select("user_id, stableford_score, score_date")
          .in("user_id", participantIds)
@@ -105,7 +127,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    )
 
    if (scoresRes.isErr()) {
-      console.error("Error fetching scores:", scoresRes.error)
+      console.error("[Execute] Error fetching scores:", scoresRes.error)
       return NextResponse.json(
          {
             error: "something went wrong",
@@ -114,7 +136,20 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       )
    }
 
-   const scores = scoresRes.value.data || []
+   const scores = (scoresRes.value as any)?.data || []
+   console.log("[Execute] Scores found:", scores.length)
+
+   if (scores.length === 0) {
+      console.log("[Execute] No scores found for participants")
+      return NextResponse.json(
+         {
+            error: "no_scores",
+            message: "Participants need at least one golf score to participate",
+         },
+         { status: 400 }
+      )
+   }
+
    const userScoresMap = new Map<string, number[]>()
 
    scores.forEach((score: any) => {

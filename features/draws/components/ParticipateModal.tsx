@@ -13,6 +13,7 @@ import { useAuth } from "@/features"
 import { useParticipateInDraw, useLeaveDraw } from "../hooks/useDrawParticipation"
 import { useRouter } from "next/navigation"
 import { IconTarget } from "@tabler/icons-react"
+import { fromPromise } from "neverthrow"
 
 interface ParticipateModalProps {
    open: boolean
@@ -45,10 +46,9 @@ export function ParticipateModal({
 
       setError(null)
 
-      try {
-         await participateMutation.mutateAsync(drawId)
-         onOpenChange(false)
-      } catch (err: any) {
+      const mutationRes = await fromPromise(participateMutation.mutateAsync(drawId), err => err)
+      if (mutationRes.isErr()) {
+         const err = mutationRes.error as Error
          if (err.message === "subscription_required") {
             onOpenChange(false)
             onUpgradeClick()
@@ -59,7 +59,9 @@ export function ParticipateModal({
          } else {
             setError(err.message || "Failed to participate")
          }
+         return
       }
+      onOpenChange(false)
    }
 
    const handleLeave = async () => {

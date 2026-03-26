@@ -37,5 +37,7 @@ export async function GET(_: Request) {
 
    const participations = participationsRes.value.data || []
 
+   console.log("User participations:", participations)
+
    return NextResponse.json(participations)
 }

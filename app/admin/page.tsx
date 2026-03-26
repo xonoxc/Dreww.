@@ -7,9 +7,8 @@ import { AdminOverview } from "@/features/admin/compoennts/AdminOverview"
 import { DrawsManager } from "@/features/admin/compoennts/DrawsManager"
 import { WinnerVerification } from "@/features/admin/compoennts/WinnerVerification"
 import { AuditLogs } from "@/features/admin/compoennts/AuditLogs"
+import { UserManagement } from "@/features/admin/compoennts/UserManagement"
 import { IconLayoutDashboard, IconTrophy, IconHistory, IconUsers } from "@tabler/icons-react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
 
 function OverviewSkeleton() {
    return (
@@ -78,17 +77,9 @@ export default function AdminPage() {
             </TabsContent>
 
             <TabsContent value="users">
-               <div className="rounded-lg border border-border bg-card/30 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                     <div>
-                        <h3 className="text-lg font-bold">User Management</h3>
-                        <p className="text-sm text-muted-foreground">Manage platform users</p>
-                     </div>
-                     <Button asChild variant="outline">
-                        <Link href="/admin/user-management">Open User Management</Link>
-                     </Button>
-                  </div>
-               </div>
+               <Suspense fallback={<SectionSkeleton />}>
+                  <UserManagement />
+               </Suspense>
             </TabsContent>
          </Tabs>
       </div>

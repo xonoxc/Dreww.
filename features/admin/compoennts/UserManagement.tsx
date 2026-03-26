@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import BackBtn from "@/components/BackBtn"
 
 interface UserProfile {
    id: string
@@ -39,7 +38,7 @@ const toggleAdminStatus = async (userId: string, isAdmin: boolean) => {
    if (error) throw error
 }
 
-export default function UserManagementPage() {
+export function UserManagement() {
    const [searchTerm, setSearchTerm] = useState("")
    const [sortBy, setSortBy] = useState("created_at")
    const queryClient = useQueryClient()
@@ -69,14 +68,8 @@ export default function UserManagementPage() {
 
    return (
       <div className="space-y-6">
-         <div className="flex  gap-4 px-3 flex-col">
-            <BackBtn className="w-fit" />
-            <h1 className="text-2xl font-bold">User Management</h1>
-            <p className="text-muted-foreground">View and manage platform users</p>
-         </div>
-
          {/* Search and Filter */}
-         <div className="flex gap-4 px-3 items-center justify-around">
+         <div className="flex gap-4 items-center">
             <input
                type="text"
                placeholder="Search users by name or email..."
@@ -88,7 +81,7 @@ export default function UserManagementPage() {
             <select
                value={sortBy}
                onChange={e => setSortBy(e.target.value)}
-               className="px-12 py-2 rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+               className="px-4 py-2 rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
             >
                <option value="created_at">Newest First</option>
                <option value="full_name">Name</option>
@@ -103,22 +96,22 @@ export default function UserManagementPage() {
                <table className="w-full">
                   <thead>
                      <tr className="border-b border-border bg-secondary/30">
-                        <th className="px-6 py-3 text-left text-sm font-bold text-foreground">
+                        <th className="px-4 py-3 text-left text-sm font-bold text-foreground">
                            User
                         </th>
-                        <th className="px-6 py-3 text-left text-sm font-bold text-foreground">
-                           Golf Handicap
+                        <th className="px-4 py-3 text-left text-sm font-bold text-foreground">
+                           Handicap
                         </th>
-                        <th className="px-6 py-3 text-left text-sm font-bold text-foreground">
+                        <th className="px-4 py-3 text-left text-sm font-bold text-foreground">
                            Subscription
                         </th>
-                        <th className="px-6 py-3 text-left text-sm font-bold text-foreground">
+                        <th className="px-4 py-3 text-left text-sm font-bold text-foreground">
                            Scores
                         </th>
-                        <th className="px-6 py-3 text-left text-sm font-bold text-foreground">
-                           Admin
+                        <th className="px-4 py-3 text-left text-sm font-bold text-foreground">
+                           Role
                         </th>
-                        <th className="px-6 py-3 text-left text-sm font-bold text-foreground">
+                        <th className="px-4 py-3 text-left text-sm font-bold text-foreground">
                            Actions
                         </th>
                      </tr>
@@ -127,23 +120,23 @@ export default function UserManagementPage() {
                      {loading ? (
                         Array.from({ length: 5 }).map((_, i) => (
                            <tr key={i} className="border-b border-border">
-                              <td className="px-6 py-4">
-                                 <Skeleton className="h-4 w-48" />
+                              <td className="px-4 py-3">
+                                 <Skeleton className="h-4 w-32" />
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-4 py-3">
                                  <Skeleton className="h-4 w-12" />
                               </td>
-                              <td className="px-6 py-4">
-                                 <Skeleton className="h-4 w-20" />
+                              <td className="px-4 py-3">
+                                 <Skeleton className="h-4 w-16" />
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-4 py-3">
                                  <Skeleton className="h-4 w-8" />
                               </td>
-                              <td className="px-6 py-4">
-                                 <Skeleton className="h-4 w-10" />
+                              <td className="px-4 py-3">
+                                 <Skeleton className="h-4 w-12" />
                               </td>
-                              <td className="px-6 py-4">
-                                 <Skeleton className="h-4 w-24" />
+                              <td className="px-4 py-3">
+                                 <Skeleton className="h-8 w-20" />
                               </td>
                            </tr>
                         ))
@@ -151,24 +144,24 @@ export default function UserManagementPage() {
                         filteredUsers.map(user => (
                            <tr
                               key={user.id}
-                              className="border-b border-border hover:bg-secondary/20 transition-all duration-300 ease-out"
+                              className="border-b border-border hover:bg-secondary/20 transition-all"
                            >
-                              <td className="px-6 py-4">
+                              <td className="px-4 py-3">
                                  <div>
                                     <p className="font-medium text-foreground">
                                        {user.full_name || "N/A"}
                                     </p>
-                                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                                    <p className="text-xs text-muted-foreground">{user.email}</p>
                                  </div>
                               </td>
-                              <td className="px-6 py-4 text-sm">
+                              <td className="px-4 py-3 text-sm">
                                  {user.golf_handicap !== null
                                     ? user.golf_handicap?.toFixed(1)
                                     : "N/A"}
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-4 py-3">
                                  <span
-                                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+                                    className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                                        user.subscription_tier === "elite"
                                           ? "bg-yellow-500/20 text-yellow-400"
                                           : user.subscription_tier === "premium"
@@ -177,22 +170,22 @@ export default function UserManagementPage() {
                                     }`}
                                  >
                                     {user.subscription_tier?.charAt(0).toUpperCase() +
-                                       (user.subscription_tier?.slice(1) || "")}
+                                       (user.subscription_tier?.slice(1) || "Free")}
                                  </span>
                               </td>
-                              <td className="px-6 py-4 text-sm font-medium">
+                              <td className="px-4 py-3 text-sm font-medium">
                                  {user.total_scores || 0}
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-4 py-3">
                                  {user.is_admin ? (
-                                    <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-accent/20 text-accent">
+                                    <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded-full">
                                        Admin
                                     </span>
                                  ) : (
                                     <span className="text-xs text-muted-foreground">User</span>
                                  )}
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-4 py-3">
                                  <Button
                                     onClick={() => handleToggleAdmin(user.id, user.is_admin)}
                                     size="sm"
@@ -207,8 +200,8 @@ export default function UserManagementPage() {
                         ))
                      ) : (
                         <tr>
-                           <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
-                              No users found matching your search.
+                           <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                              No users found.
                            </td>
                         </tr>
                      )}
@@ -228,13 +221,13 @@ export default function UserManagementPage() {
                <p className="text-2xl font-bold mt-2">{users.filter(u => u.is_admin).length}</p>
             </div>
             <div className="rounded-lg border border-border bg-card/50 p-4">
-               <p className="text-sm text-muted-foreground">Premium Users</p>
+               <p className="text-sm text-muted-foreground">Premium</p>
                <p className="text-2xl font-bold mt-2">
                   {users.filter(u => u.subscription_tier === "premium").length}
                </p>
             </div>
             <div className="rounded-lg border border-border bg-card/50 p-4">
-               <p className="text-sm text-muted-foreground">Elite Users</p>
+               <p className="text-sm text-muted-foreground">Elite</p>
                <p className="text-2xl font-bold mt-2">
                   {users.filter(u => u.subscription_tier === "elite").length}
                </p>
