@@ -10,13 +10,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
 
    if (userGetRes.isErr()) {
-      console.error("Error fetching current user:", userGetRes.error)
-      return NextResponse.json(
-         {
-            error: "something went wrong",
-         },
-         { status: 500 }
-      )
+      return NextResponse.json({ error: "something went wrong" }, { status: 500 })
    }
 
    const {
@@ -34,7 +28,6 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    )
 
    if (adminCheckRes.isErr()) {
-      console.error("Error checking admin:", adminCheckRes.error)
       return NextResponse.json(
          {
             error: "something went wrong",
@@ -49,9 +42,6 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
    }
 
-   console.log("[Execute] Starting for drawId:", drawId)
-
-   // First check draw exists and is open
    const drawCheckRes = await fromPromise(
       adminClient
          .from("draws")
@@ -62,15 +52,11 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    )
 
    if (drawCheckRes.isErr()) {
-      console.error("[Execute] Error fetching draw:", drawCheckRes.error)
       return NextResponse.json({ error: "draw not found" }, { status: 404 })
    }
 
    const drawResponse = drawCheckRes.value as any
    const draw = drawResponse.data
-
-   console.log("[Execute] Draw found:", draw)
-   console.log("[Execute] Draw.id:", draw?.id, "Draw.status:", draw?.status)
 
    if (draw.status !== "open") {
       return NextResponse.json(
@@ -79,31 +65,24 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       )
    }
 
-   // Query draw_participants table directly for this draw
-   console.log("[Execute] Fetching participants from draw_participants table for drawId:", drawId)
    const participantsRes = await fromPromise(
       (adminClient as any)
          .from("draw_participants")
-         .select("id, draw_id, user_id, status, entered_at")
+         .select("id, draw_id, user_id, status")
          .eq("draw_id", drawId),
       err => err
    )
 
    if (participantsRes.isErr()) {
-      console.error("[Execute] Error fetching participants:", participantsRes.error)
       return NextResponse.json({ error: "error fetching participants" }, { status: 500 })
    }
 
    const participantsResponse = participantsRes.value as any
    const allParticipants = participantsResponse.data || []
-   console.log("[Execute] All participants from table (any status):", allParticipants.length)
-   console.log("[Execute] All participants:", JSON.stringify(allParticipants))
 
    const participants = allParticipants.filter((p: any) => p.status === "active")
-   console.log("[Execute] Active participants:", participants.length)
 
    if (participants.length < 1) {
-      console.log("[Execute] Not enough participants - found:", participants.length, "need: 3")
       return NextResponse.json(
          {
             error: "insufficient_participants",
@@ -115,8 +94,6 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
    const participantIds = participants.map((p: any) => p.user_id)
 
-   console.log("[Execute] Participant IDs:", participantIds)
-
    const scoresRes = await fromPromise(
       (adminClient as any)
          .from("golf_scores")
@@ -127,7 +104,6 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    )
 
    if (scoresRes.isErr()) {
-      console.error("[Execute] Error fetching scores:", scoresRes.error)
       return NextResponse.json(
          {
             error: "something went wrong",
@@ -137,10 +113,8 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    }
 
    const scores = (scoresRes.value as any)?.data || []
-   console.log("[Execute] Scores found:", scores.length)
 
    if (scores.length === 0) {
-      console.log("[Execute] No scores found for participants")
       return NextResponse.json(
          {
             error: "no_scores",
@@ -186,7 +160,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       const participant = top3[i]
 
       const drawResultRes = await fromPromise(
-         supabase
+         adminClient
             .from("draw_results")
             .insert({
                draw_id: drawId,
@@ -202,14 +176,13 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       )
 
       if (drawResultRes.isErr()) {
-         console.error("Error creating draw result:", drawResultRes.error)
          continue
       }
 
       const drawResult = drawResultRes.value.data as any
 
       ;(async () => {
-         await (supabase as any)
+         await (adminClient as any)
             .from("draw_participants")
             .update({ status: "winner" })
             .eq("draw_id", drawId)
@@ -244,7 +217,6 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    )
 
    if (updateRes.isErr()) {
-      console.error("Error updating draw status:", updateRes.error)
    }
 
    return NextResponse.json({ success: true, winners })

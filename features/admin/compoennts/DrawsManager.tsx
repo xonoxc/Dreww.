@@ -60,15 +60,10 @@ export function DrawsManager() {
    const handleExecuteDraw = async (drawId: string) => {
       setExecuteError(null)
       setExecutingDrawId(drawId)
-      const result = await fromPromise(executeDrawMutation.mutateAsync(drawId), err => {
-         const message = err instanceof Error ? err.message : "Failed to execute draw"
-         setExecuteError({ drawId, message })
+      await fromPromise(executeDrawMutation.mutateAsync(drawId), err => {
+         console.error("Execute draw error:", err)
+         setExecuteError("Failed to execute draw")
       })
-
-      if (result.isErr()) {
-         setExecutingDrawId(null)
-         return
-      }
 
       setExecutingDrawId(null)
    }
@@ -81,6 +76,11 @@ export function DrawsManager() {
 
    return (
       <div className="space-y-6">
+         {executeError && (
+            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive text-destructive">
+               {executeError}
+            </div>
+         )}
          <div>
             <h3 className="text-xl font-bold tracking-tight">Monthly Draws Management</h3>
             <p className="text-sm text-muted-foreground">Create and manage monthly prize draws</p>
@@ -131,19 +131,7 @@ export function DrawsManager() {
                   </select>
                </div>
 
-               <div>
-                  <label className="block text-sm font-medium mb-2">Prize Pool (₹)</label>
-                  <input
-                     type="number"
-                     value={prizePool}
-                     onChange={e => setPrizePool(parseInt(e.target.value) || 0)}
-                     className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-                     min={0}
-                     step={100}
-                  />
-               </div>
-
-               <div className="flex items-end md:col-span-4">
+               <div className="flex items-end">
                   <Button
                      onClick={handleCreateDraw}
                      disabled={createDrawMutation.isPending}
@@ -176,22 +164,17 @@ export function DrawsManager() {
                            <div className="flex items-center gap-3">
                               <div>
                                  <h5 className="font-bold">
-                                    {MONTHS[Number(draw.month) - 1]} {draw.year}
+                                    {draw.month} {draw.year}
                                  </h5>
                                  <p className="text-sm text-muted-foreground">
-                                    {draw.draw_type} • {draw.eligible_users_count || 0} participants
-                                    • ₹{Number(draw.prize_pool || 0).toLocaleString()}
+                                    {draw.eligible_users_count} participants • $
+                                    {draw.prize_pool.toLocaleString()}
                                  </p>
                               </div>
                            </div>
                         </div>
 
                         <div className="flex items-center gap-3">
-                           {executeError?.drawId === draw.id && (
-                              <span className="text-sm text-red-500 bg-red-500/10 px-3 py-1 rounded">
-                                 {executeError.message}
-                              </span>
-                           )}
                            <span
                               className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(draw.status)}`}
                            >

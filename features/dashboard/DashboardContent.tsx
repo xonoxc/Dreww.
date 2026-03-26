@@ -10,9 +10,10 @@ import {
 } from "@/features/golf/hooks/useGolfScores"
 import { AddScoreForm } from "@/features/golf/components/AddScoreForm"
 import { ScoresList } from "@/features/golf/components/ScoresList"
-import { useAuth } from "@/features"
+import { useAuth, useUnreadNotificationCount } from "@/features"
 import { Navbar, StatCard, DrawSection, CharityImpact, WinnerNotification } from "./components"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 import { fromPromise } from "neverthrow"
 import {
    IconChartBar,
@@ -30,6 +31,7 @@ export function DashboardContent() {
    const { data: scores } = useGolfScores()
    const addScoreMutation = useAddGolfScore()
    const deleteScoreMutation = useDeleteGolfScore()
+   const unreadCount = useUnreadNotificationCount()
 
    const lastFiveScores = useLastFiveScores()
    const averageScore = useAverageScore()
@@ -104,7 +106,12 @@ export function DashboardContent() {
                   </TabsTrigger>
                   <TabsTrigger value="winners" className="gap-2">
                      <IconGift className="w-4 h-4" />
-                     Winners
+                     Wins
+                     {unreadCount > 0 && (
+                        <Badge className="ml-1 bg-yellow-500 text-white h-5 min-w-5 px-1.5">
+                           {unreadCount}
+                        </Badge>
+                     )}
                   </TabsTrigger>
                   <TabsTrigger value="charity" className="gap-2">
                      <IconHeart className="w-4 h-4" />

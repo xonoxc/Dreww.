@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { usePendingVerifications, useVerifyWinner } from "../hooks/useDrawerManagement"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fromPromise } from "neverthrow"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { IconCheck, IconX, IconCamera, IconUser, IconMedal } from "@tabler/icons-react"
+import { useDrawStatsStore } from "@/lib/stores/drawStatsStore"
 
 const POSITION_LABELS = {
    1: "1st Place",
@@ -145,29 +146,37 @@ function ProofDialog({
             </div>
             {winner.status === "pending_verification" && winner.claimed_at && (
                <div className="flex gap-3 pt-4 border-t">
-                  <Button
-                     onClick={() => {
-                        onApprove(winner.id)
-                        onOpenChange()
-                     }}
-                     disabled={verifyingId === winner.id || isVerifying}
-                     className="flex-1 bg-green-500 hover:bg-green-600"
-                  >
-                     <IconCheck className="w-4 h-4 mr-2" />
-                     Approve
-                  </Button>
-                  <Button
-                     onClick={() => {
-                        onReject(winner.id)
-                        onOpenChange()
-                     }}
-                     disabled={verifyingId === winner.id || isVerifying}
-                     variant="outline"
-                     className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                  >
-                     <IconX className="w-4 h-4 mr-2" />
-                     Reject
-                  </Button>
+                  {winner.proof_screenshot_url || winner.winner_photo_url ? (
+                     <>
+                        <Button
+                           onClick={() => {
+                              onApprove(winner.id)
+                              onOpenChange()
+                           }}
+                           disabled={verifyingId === winner.id || isVerifying}
+                           className="flex-1 bg-green-500 hover:bg-green-600"
+                        >
+                           <IconCheck className="w-4 h-4 mr-2" />
+                           Approve
+                        </Button>
+                        <Button
+                           onClick={() => {
+                              onReject(winner.id)
+                              onOpenChange()
+                           }}
+                           disabled={verifyingId === winner.id || isVerifying}
+                           variant="outline"
+                           className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                        >
+                           <IconX className="w-4 h-4 mr-2" />
+                           Reject
+                        </Button>
+                     </>
+                  ) : (
+                     <div className="text-sm text-yellow-500 bg-yellow-500/10 px-3 py-2 rounded w-full text-center">
+                        Awaiting user to upload proof
+                     </div>
+                  )}
                </div>
             )}
          </DialogContent>
@@ -259,7 +268,7 @@ function PendingWinnerList({
                                     {winner.winner_email}
                                  </p>
                               </div>
-                              <div className="text-right">
+                              <div className="text-right flex items-center justify-center border-2">
                                  <p
                                     className={`text-lg font-bold ${getPrizeColor(winner.prize_amount)}`}
                                  >

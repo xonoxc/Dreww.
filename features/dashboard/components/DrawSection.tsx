@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth, useProfile, useDraws, useUserParticipations } from "@/features"
 import { Button } from "@/components/ui/button"
@@ -41,12 +41,17 @@ export function DrawSection() {
    const isEligible =
       profile?.subscription_tier === "premium" || profile?.subscription_tier === "elite"
 
-   const openDraw = draws?.find(d => d.status === "open")
-   const isParticipating = openDraw
-      ? participations?.some((p: any) => p.draw_id === openDraw.id && p.status === "active")
-      : false
+   const openDraws = draws?.filter(d => d.status === "open") || []
 
-   const handleParticipateClick = () => {
+   const isParticipating = (drawId: string) =>
+      participations?.some((p: any) => p.draw_id === drawId && p.status === "active")
+
+   const handleParticipateClick = (
+      drawId: string,
+      month: number,
+      year: number,
+      prizePool: number
+   ) => {
       if (!user) {
          router.push("/auth/sign-in?redirect=/dashboard")
          return
@@ -57,21 +62,16 @@ export function DrawSection() {
          return
       }
 
-      if (openDraw) {
-         setSelectedDraw({
-            id: openDraw.id,
-            title: `${MONTHS[openDraw.month - 1]} ${openDraw.year}`,
-            prizePool: openDraw.prize_pool,
-         })
-         setParticipateOpen(true)
-      }
+      setSelectedDraw({
+         id: drawId,
+         title: `${MONTHS[month - 1]} ${year}`,
+         prizePool: prizePool,
+      })
+      setParticipateOpen(true)
    }
 
    const handleUpgradeSuccess = () => {
       setUpgradeOpen(false)
-      if (openDraw) {
-         setParticipateOpen(true)
-      }
    }
 
    if (authLoading || !draws) {
@@ -89,47 +89,43 @@ export function DrawSection() {
       )
    }
 
-   const prizes = openDraw
-      ? [
-           {
-              position: "1st Place",
-              prize: `₹${(Number(openDraw.prize_pool) * (openDraw.first_place_pct || 0.4)).toLocaleString()}`,
-              distribution: "40%",
-           },
-           {
-              position: "2nd Place",
-              prize: `₹${(Number(openDraw.prize_pool) * (openDraw.second_place_pct || 0.35)).toLocaleString()}`,
-              distribution: "35%",
-           },
-           {
-              position: "3rd Place",
-              prize: `₹${(Number(openDraw.prize_pool) * (openDraw.third_place_pct || 0.25)).toLocaleString()}`,
-              distribution: "25%",
-           },
-        ]
-      : [
-           { position: "1st Place", prize: "₹4,000", distribution: "40%" },
-           { position: "2nd Place", prize: "₹3,500", distribution: "35%" },
-           { position: "3rd Place", prize: "₹2,500", distribution: "25%" },
-        ]
+   const renderDrawCard = (draw: any) => {
+      const participating = isParticipating(draw.id)
+      const prizes = [
+         {
+            position: "1st Place",
+            prize: `₹${(Number(draw.prize_pool) * (draw.first_place_pct || 0.4)).toLocaleString()}`,
+            distribution: "40%",
+         },
+         {
+            position: "2nd Place",
+            prize: `₹${(Number(draw.prize_pool) * (draw.second_place_pct || 0.35)).toLocaleString()}`,
+            distribution: "35%",
+         },
+         {
+            position: "3rd Place",
+            prize: `₹${(Number(draw.prize_pool) * (draw.third_place_pct || 0.25)).toLocaleString()}`,
+            distribution: "25%",
+         },
+      ]
+      const drawTitle = `${MONTHS[draw.month - 1]} ${draw.year}`
 
-   const drawTitle = openDraw ? `${MONTHS[openDraw.month - 1]} ${openDraw.year}` : "Monthly Draw"
-
-   return (
-      <div className="mt-12 p-8 border border-border rounded-lg bg-secondary/20">
-         <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-heavy text-foreground">{drawTitle}</h2>
-            {openDraw && (
+      return (
+         <div key={draw.id} className="p-8 border border-border rounded-lg bg-secondary/20">
+            <div className="flex items-center justify-between mb-4">
+               <h2 className="text-2xl font-heavy text-foreground">{drawTitle}</h2>
                <Button
-                  variant={isParticipating ? "outline" : "default"}
-                  onClick={handleParticipateClick}
+                  variant={participating ? "outline" : "default"}
+                  onClick={() =>
+                     handleParticipateClick(draw.id, draw.month, draw.year, draw.prize_pool)
+                  }
                   className={
-                     isParticipating
+                     participating
                         ? "border-green-500 text-green-500"
                         : "bg-accent hover:bg-accent/90"
                   }
                >
-                  {isParticipating ? (
+                  {participating ? (
                      <span className="flex items-center gap-1">
                         <IconCheck className="w-4 h-4" /> Participating
                      </span>
@@ -139,29 +135,27 @@ export function DrawSection() {
                      "Upgrade to Participate"
                   )}
                </Button>
-            )}
-         </div>
+            </div>
 
-         <div className="grid md:grid-cols-3 gap-6">
-            {prizes.map((draw, i) => (
-               <div
-                  key={i}
-                  className="p-6 border border-border rounded-lg bg-card hover:border-accent smooth-transition"
-               >
-                  <p className="text-sm text-muted-foreground font-normal-weight mb-2">
-                     {draw.position}
-                  </p>
-                  <p className="text-3xl font-heavy text-accent mb-2">{draw.prize}</p>
-                  <p className="text-xs text-muted-foreground font-normal-weight">
-                     {draw.distribution} of pool
-                  </p>
-               </div>
-            ))}
-         </div>
+            <div className="grid md:grid-cols-3 gap-6">
+               {prizes.map((prize, i) => (
+                  <div
+                     key={i}
+                     className="p-6 border border-border rounded-lg bg-card hover:border-accent smooth-transition"
+                  >
+                     <p className="text-sm text-muted-foreground font-normal-weight mb-2">
+                        {prize.position}
+                     </p>
+                     <p className="text-3xl font-heavy text-accent mb-2">{prize.prize}</p>
+                     <p className="text-xs text-muted-foreground font-normal-weight">
+                        {prize.distribution} of pool
+                     </p>
+                  </div>
+               ))}
+            </div>
 
-         {openDraw && (
             <div className="mt-6 p-4 bg-accent/10 border border-accent/30 rounded-lg">
-               {isParticipating ? (
+               {participating ? (
                   <p className="text-sm font-normal-weight text-foreground">
                      <span className="font-heavy">You&apos;re in!</span> Good luck! Winners will be
                      notified after the draw is executed.
@@ -178,20 +172,28 @@ export function DrawSection() {
                   </p>
                )}
             </div>
-         )}
+         </div>
+      )
+   }
 
-         {!openDraw && (
-            <div className="mt-6 p-4 bg-muted/50 border border-border rounded-lg">
-               <p className="text-sm font-normal-weight text-muted-foreground">
-                  No open draws at the moment. Check back soon or view past draws below.
-               </p>
-               <Button
-                  variant="link"
-                  className="px-0 h-auto p-0 mt-2 text-accent"
-                  onClick={() => router.push("/draws")}
-               >
-                  View All Draws →
-               </Button>
+   return (
+      <div className="space-y-8">
+         {openDraws.length > 0 ? (
+            openDraws.map(draw => renderDrawCard(draw))
+         ) : (
+            <div className="mt-12 p-8 border border-border rounded-lg bg-secondary/20">
+               <div className="p-4 bg-muted/50 border border-border rounded-lg">
+                  <p className="text-sm font-normal-weight text-muted-foreground">
+                     No open draws at the moment. Check back soon or view past draws below.
+                  </p>
+                  <Button
+                     variant="link"
+                     className="px-0 h-auto p-0 mt-2 text-accent"
+                     onClick={() => router.push("/draws")}
+                  >
+                     View All Draws →
+                  </Button>
+               </div>
             </div>
          )}
 

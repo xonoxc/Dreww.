@@ -38,9 +38,7 @@ export const useParticipateInDraw = () => {
          return data
       },
       onSuccess: () => {
-         queryClient.invalidateQueries({
-            queryKey: DRAW_PARTICIPATION_KEY,
-         })
+         queryClient.invalidateQueries({ queryKey: ["user-draws"] })
          queryClient.invalidateQueries({ queryKey: ["draws"] })
       },
    })

@@ -10,7 +10,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
 
    if (userGetRes.isErr()) {
-      console.error("Error fetching current user:", userGetRes.error)
       return NextResponse.json({ error: "something went wrong" }, { status: 500 })
    }
 
@@ -37,7 +36,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
    )
 
    if (drawResultRes.isErr()) {
-      console.error("Error fetching draw result:", drawResultRes.error)
       return NextResponse.json({ error: "draw result not found" }, { status: 404 })
    }
 
@@ -64,7 +62,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
    )
 
    if (updateRes.isErr()) {
-      console.error("Error updating claim:", updateRes.error)
       return NextResponse.json({ error: "something went wrong" }, { status: 500 })
    }
 

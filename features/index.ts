@@ -34,7 +34,10 @@ export { WinnerClaimModal } from "./draws/components/WinnerClaimModal"
 export { DonationBadge } from "./draws/components/DonationBadge"
 
 // Notification Exports
-export { useNotifications } from "./notifications/hooks/useNotifications"
+export {
+   useNotifications,
+   useUnreadNotificationCount,
+} from "./notifications/hooks/useNotifications"
 
 // Payment Exports
 export { UpgradeModal } from "./payments/components/UpgradeModal"

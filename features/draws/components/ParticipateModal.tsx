@@ -14,6 +14,7 @@ import { useParticipateInDraw, useLeaveDraw } from "../hooks/useDrawParticipatio
 import { useRouter } from "next/navigation"
 import { IconTarget } from "@tabler/icons-react"
 import { fromPromise } from "neverthrow"
+import { toast } from "sonner"
 
 interface ParticipateModalProps {
    open: boolean
@@ -62,6 +63,7 @@ export function ParticipateModal({
          return
       }
       onOpenChange(false)
+      toast.success("Successfully joined the draw! Good luck! 🎉")
    }
 
    const handleLeave = async () => {

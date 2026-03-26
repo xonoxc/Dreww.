@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Providers } from "./providers"
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import Script from "next/script"
@@ -42,6 +43,7 @@ export default function RootLayout({
          <body className={cn(_geist.className, _geistMono.className)} suppressHydrationWarning>
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
             <Providers>{children}</Providers>
+            <Toaster position="bottom-right" />
             <Analytics />
          </body>
       </html>
