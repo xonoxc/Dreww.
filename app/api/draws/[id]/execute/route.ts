@@ -197,7 +197,11 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
    await (supabase as any)
       .from("draws")
-      .update({ status: "closed", closed_at: new Date().toISOString() })
+      .update({
+         status: "closed",
+         closed_at: new Date().toISOString(),
+         completed_at: new Date().toISOString(),
+      })
       .eq("id", drawId)
 
    return NextResponse.json({ success: true, winners })

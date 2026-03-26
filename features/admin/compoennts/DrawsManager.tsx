@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fromPromise } from "neverthrow"
+import { on } from "node:events"
 
 const MONTHS = [
    "January",
@@ -29,7 +30,6 @@ const MONTHS = [
 const DRAW_TYPES = [
    { value: "random", label: "Random Draw" },
    { value: "algorithmic", label: "Algorithmic (Score-Based)" },
-   { value: "hybrid", label: "Hybrid (Score + Random)" },
 ]
 
 export function DrawsManager() {
@@ -40,7 +40,9 @@ export function DrawsManager() {
    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
    const [selectedType, setSelectedType] = useState("random")
+   const [prizePool, setPrizePool] = useState<number>(10000)
    const [executeError, setExecuteError] = useState<string | null>(null)
+   const [executingDrawId, setExecutingDrawId] = useState<string | null>(null)
 
    const handleCreateDraw = async () => {
       await fromPromise(
@@ -48,6 +50,7 @@ export function DrawsManager() {
             month: MONTHS[selectedMonth],
             year: selectedYear,
             drawType: selectedType,
+            prizePool,
          }),
          err => console.error("Create draw error:", err)
       )
@@ -55,9 +58,13 @@ export function DrawsManager() {
 
    const handleExecuteDraw = async (drawId: string) => {
       setExecuteError(null)
-      await fromPromise(executeDrawMutation.mutateAsync(drawId), err =>
-         setExecuteError(err.message || "Failed to execute draw")
-      )
+      setExecutingDrawId(drawId)
+      await fromPromise(executeDrawMutation.mutateAsync(drawId), err => {
+         console.error("Execute draw error:", err)
+         setExecuteError("Failed to execute draw")
+      })
+
+      setExecutingDrawId(null)
    }
 
    const handleCompleteDraw = async (drawId: string) => {
@@ -123,6 +130,18 @@ export function DrawsManager() {
                   </select>
                </div>
 
+               <div>
+                  <label className="block text-sm font-medium mb-2">Prize Pool (₹)</label>
+                  <input
+                     type="number"
+                     value={prizePool}
+                     onChange={e => setPrizePool(parseInt(e.target.value) || 0)}
+                     className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                     min={0}
+                     step={100}
+                  />
+               </div>
+
                <div className="flex items-end">
                   <Button
                      onClick={handleCreateDraw}
@@ -178,9 +197,13 @@ export function DrawsManager() {
                                  onClick={() => handleExecuteDraw(draw.id)}
                                  size="sm"
                                  variant="outline"
-                                 disabled={executeDrawMutation.isPending}
+                                 disabled={
+                                    executeDrawMutation.isPending && executingDrawId === draw.id
+                                 }
                               >
-                                 {executeDrawMutation.isPending ? "..." : "Execute Draw"}
+                                 {executeDrawMutation.isPending && executingDrawId === draw.id
+                                    ? "..."
+                                    : "Execute Draw"}
                               </Button>
                            )}
 

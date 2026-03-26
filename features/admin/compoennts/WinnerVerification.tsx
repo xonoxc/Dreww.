@@ -5,6 +5,7 @@ import { usePendingVerifications, useVerifyWinner } from "../hooks/useDrawerMana
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fromPromise } from "neverthrow"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 const POSITION_LABELS = {
    1: "1st Place",
@@ -13,11 +14,10 @@ const POSITION_LABELS = {
 }
 
 export function WinnerVerification() {
-   const { data: pendingWinners = [], isLoading: loading, error } = usePendingVerifications()
+   const { data: pendingWinners = [], isLoading: loading } = usePendingVerifications()
    const verifyWinnerMutation = useVerifyWinner()
    const [verifyingId, setVerifyingId] = useState<string | null>(null)
-
-   console.error("Pending winners error:", error)
+   const [viewProofFor, setViewProofFor] = useState<any>(null)
 
    const handleApprove = async (winnerId: string) => {
       setVerifyingId(winnerId)
@@ -69,11 +69,65 @@ export function WinnerVerification() {
                handleReject={handleReject}
                handleApprove={handleApprove}
                pendingWinners={pendingWinners}
+               onViewProof={setViewProofFor}
             />
          ) : (
             <EmptyState />
          )}
+
+         {viewProofFor && (
+            <ProofDialog
+               winner={viewProofFor}
+               open={!!viewProofFor}
+               onOpenChange={() => setViewProofFor(null)}
+            />
+         )}
       </div>
+   )
+}
+
+function ProofDialog({
+   winner,
+   open,
+   onOpenChange,
+}: {
+   winner: any
+   open: boolean
+   onOpenChange: () => void
+}) {
+   return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+         <DialogContent className="max-w-2xl">
+            <DialogHeader>
+               <DialogTitle>Proof for {winner.winner_email}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+               {winner.proof_screenshot_url && (
+                  <div>
+                     <p className="font-medium mb-2">📸 Score Screenshot</p>
+                     <img
+                        src={winner.proof_screenshot_url}
+                        alt="Score proof"
+                        className="w-full rounded-lg border"
+                     />
+                  </div>
+               )}
+               {winner.winner_photo_url && (
+                  <div>
+                     <p className="font-medium mb-2">📷 Winner Photo</p>
+                     <img
+                        src={winner.winner_photo_url}
+                        alt="Winner photo"
+                        className="w-full rounded-lg border"
+                     />
+                  </div>
+               )}
+               {!winner.proof_screenshot_url && !winner.winner_photo_url && (
+                  <p className="text-muted-foreground">No proof submitted yet.</p>
+               )}
+            </div>
+         </DialogContent>
+      </Dialog>
    )
 }
 
@@ -109,64 +163,148 @@ function PendingWinnerList({
    handleReject,
    verifyingId,
    verifyWinnerMutation,
+   onViewProof,
 }: {
    pendingWinners: any[]
    handleApprove: (id: string) => void
    handleReject: (id: string) => void
    verifyingId: string | null
    verifyWinnerMutation: ReturnType<typeof useVerifyWinner>
+   onViewProof: (winner: any) => void
 }) {
-   return (
-      <div className="space-y-3">
-         {pendingWinners.map(winner => (
-            <div
-               key={winner.id}
-               className="flex items-center justify-between rounded-lg border border-border bg-card/50 p-4 transition-all duration-300 ease-out hover:border-accent hover:bg-card"
-            >
-               <div className="flex-1">
-                  <div className="flex items-center gap-4">
-                     <div className="flex items-center justify-center w-12 h-12 rounded-full bg-accent/10 border border-accent/30">
-                        <span className="font-bold text-accent">
-                           {winner.position === 1 ? "🥇" : winner.position === 2 ? "🥈" : "🥉"}
-                        </span>
-                     </div>
-                     <div className="flex-1">
-                        <h5 className="font-bold">
-                           {POSITION_LABELS[winner.position as keyof typeof POSITION_LABELS]}
-                        </h5>
-                        <p className="text-sm text-muted-foreground">{winner.winner_email}</p>
-                     </div>
-                     <div className="text-right">
-                        <p className={`text-lg font-bold ${getPrizeColor(winner.prize_amount)}`}>
-                           ${winner.prize_amount.toLocaleString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Prize Amount</p>
-                     </div>
-                  </div>
-               </div>
+   const pending = pendingWinners.filter((w: any) => w.status === "pending_verification")
+   const verified = pendingWinners.filter((w: any) => w.status === "verified")
 
-               <div className="flex items-center gap-2 ml-4">
-                  <Button
-                     onClick={() => handleApprove(winner.id)}
-                     disabled={verifyingId === winner.id || verifyWinnerMutation.isPending}
-                     size="sm"
-                     className="bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
-                     variant="outline"
-                  >
-                     {verifyingId === winner.id ? "..." : "✓ Approve"}
-                  </Button>
-                  <Button
-                     onClick={() => handleReject(winner.id)}
-                     disabled={verifyingId === winner.id || verifyWinnerMutation.isPending}
-                     size="sm"
-                     className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
-                     variant="outline"
-                  >
-                     {verifyingId === winner.id ? "..." : "✗ Reject"}
-                  </Button>
+   return (
+      <div className="space-y-6">
+         {pending.length > 0 && (
+            <div>
+               <h4 className="font-semibold text-yellow-400 mb-3">
+                  Pending Verification ({pending.length})
+               </h4>
+               <div className="space-y-3">
+                  {pending.map((winner: any) => (
+                     <div
+                        key={winner.id}
+                        className="flex items-center justify-between rounded-lg border border-yellow-500/30 bg-card/50 p-4"
+                     >
+                        <div className="flex-1">
+                           <div className="flex items-center gap-4">
+                              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500/10 border border-yellow-500/30">
+                                 <span className="font-bold text-yellow-400">
+                                    {winner.position === 1
+                                       ? "🥇"
+                                       : winner.position === 2
+                                         ? "🥈"
+                                         : "🥉"}
+                                 </span>
+                              </div>
+                              <div className="flex-1">
+                                 <h5 className="font-bold">
+                                    {
+                                       POSITION_LABELS[
+                                          winner.position as keyof typeof POSITION_LABELS
+                                       ]
+                                    }
+                                 </h5>
+                                 <p className="text-sm text-muted-foreground">
+                                    {winner.winner_email}
+                                 </p>
+                              </div>
+                              <div className="text-right">
+                                 <p
+                                    className={`text-lg font-bold ${getPrizeColor(winner.prize_amount)}`}
+                                 >
+                                    ₹{winner.prize_amount.toLocaleString()}
+                                 </p>
+                              </div>
+                           </div>
+                           {winner.claimed_at && (
+                              <div className="mt-2 flex gap-2">
+                                 <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => onViewProof(winner)}
+                                 >
+                                    View Proof
+                                 </Button>
+                              </div>
+                           )}
+                        </div>
+
+                        <div className="flex items-center gap-2 ml-4">
+                           <Button
+                              onClick={() => handleApprove(winner.id)}
+                              disabled={verifyingId === winner.id || verifyWinnerMutation.isPending}
+                              size="sm"
+                              className="bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
+                              variant="outline"
+                           >
+                              {verifyingId === winner.id ? "..." : "✓ Approve"}
+                           </Button>
+                           <Button
+                              onClick={() => handleReject(winner.id)}
+                              disabled={verifyingId === winner.id || verifyWinnerMutation.isPending}
+                              size="sm"
+                              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
+                              variant="outline"
+                           >
+                              {verifyingId === winner.id ? "..." : "✗ Reject"}
+                           </Button>
+                        </div>
+                     </div>
+                  ))}
                </div>
             </div>
-         ))}
+         )}
+
+         {verified.length > 0 && (
+            <div>
+               <h4 className="font-semibold text-green-400 mb-3">Verified ({verified.length})</h4>
+               <div className="space-y-3">
+                  {verified.map((winner: any) => (
+                     <div
+                        key={winner.id}
+                        className="flex items-center justify-between rounded-lg border border-green-500/30 bg-card/50 p-4"
+                     >
+                        <div className="flex-1">
+                           <div className="flex items-center gap-4">
+                              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500/10 border border-green-500/30">
+                                 <span className="font-bold text-green-400">
+                                    {winner.position === 1
+                                       ? "🥇"
+                                       : winner.position === 2
+                                         ? "🥈"
+                                         : "🥉"}
+                                 </span>
+                              </div>
+                              <div className="flex-1">
+                                 <h5 className="font-bold">
+                                    {
+                                       POSITION_LABELS[
+                                          winner.position as keyof typeof POSITION_LABELS
+                                       ]
+                                    }
+                                 </h5>
+                                 <p className="text-sm text-muted-foreground">
+                                    {winner.winner_email}
+                                 </p>
+                              </div>
+                              <div className="text-right">
+                                 <p
+                                    className={`text-lg font-bold ${getPrizeColor(winner.prize_amount)}`}
+                                 >
+                                    ₹{winner.prize_amount.toLocaleString()}
+                                 </p>
+                                 <p className="text-xs text-green-400">✓ Verified</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+            </div>
+         )}
       </div>
    )
 }

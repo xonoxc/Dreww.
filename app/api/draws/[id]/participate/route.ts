@@ -1,9 +1,9 @@
-import { createServerSideClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { fromPromise } from "neverthrow"
 import { NextResponse } from "next/server"
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
-   const supabase = await createServerSideClient()
+   const supabase = createAdminClient()
    const { id: drawId } = await params
 
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
@@ -83,7 +83,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    }
 
    const existingRes = await fromPromise(
-      supabase
+      (supabase as any)
          .from("draw_participants")
          .select("*")
          .eq("draw_id", drawId)
@@ -101,9 +101,9 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    }
 
    const participateRes = await fromPromise(
-      supabase
+      (supabase as any)
          .from("draw_participants")
-         .insert({ draw_id: drawId, user_id: user.id, status: "active" } as any)
+         .insert({ draw_id: drawId, user_id: user.id, status: "active" })
          .select()
          .single(),
       err => err

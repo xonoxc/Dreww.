@@ -21,6 +21,10 @@ export interface WinnerForVerification {
    prize_amount: number
    admin_verified: boolean
    winner_email: string
+   proof_screenshot_url?: string
+   winner_photo_url?: string
+   claimed_at?: string
+   status?: string
 }
 
 export const DRAWS_QUERY_KEY = ["admin", "draws"]
@@ -40,7 +44,7 @@ const fetchPendingVerifications = async (): Promise<WinnerForVerification[]> => 
    const { data, error } = await apiClient
       .from("draw_results")
       .select("*, profiles:profiles!draw_results_user_id_fkey(email)")
-      .eq("status", "pending_verification")
+      .in("status", ["pending_verification", "verified"])
       .order("created_at", { ascending: false })
 
    if (error) throw error
@@ -53,10 +57,19 @@ const fetchPendingVerifications = async (): Promise<WinnerForVerification[]> => 
       prize_amount: row.prize_amount,
       admin_verified: row.status === "verified",
       winner_email: row.profiles?.email || "",
+      proof_screenshot_url: row.proof_screenshot_url || null,
+      winner_photo_url: row.winner_photo_url || null,
+      claimed_at: row.claimed_at || null,
+      status: row.status,
    }))
 }
 
-const createDraw = async (monthName: string, year: number, drawType: string) => {
+const createDraw = async (
+   monthName: string,
+   year: number,
+   drawType: string,
+   prizePool: number = 10000
+) => {
    const MONTHS = [
       "January",
       "February",
@@ -78,10 +91,10 @@ const createDraw = async (monthName: string, year: number, drawType: string) => 
       .insert({
          month: monthNum,
          year,
-         draw_type: drawType as "random" | "algorithmic" | "hybrid",
+         draw_type: drawType as "random" | "algorithmic",
          status: "open",
          eligible_users_count: 0,
-         prize_pool: 0,
+         prize_pool: prizePool,
       })
       .select()
       .single()
@@ -109,7 +122,7 @@ const executeDraw = async (drawId: string) => {
    return data
 }
 
-const verifyWinner = async (resultId: string, approved: boolean) => {
+const verifyWinner = async (resultId: string, approved: boolean, markAsPaid: boolean = false) => {
    const { error } = await apiClient
       .from("draw_results")
       .update({
@@ -147,8 +160,17 @@ export function useCreateDraw() {
    const queryClient = useQueryClient()
 
    return useMutation({
-      mutationFn: ({ month, year, drawType }: { month: string; year: number; drawType: string }) =>
-         createDraw(month, year, drawType),
+      mutationFn: ({
+         month,
+         year,
+         drawType,
+         prizePool,
+      }: {
+         month: string
+         year: number
+         drawType: string
+         prizePool?: number
+      }) => createDraw(month, year, drawType, prizePool),
       onSuccess: () => {
          queryClient.invalidateQueries({ queryKey: DRAWS_QUERY_KEY })
       },
@@ -159,7 +181,13 @@ export function useExecuteDraw() {
    const queryClient = useQueryClient()
 
    return useMutation({
-      mutationFn: (drawId: string) => executeDraw(drawId),
+      mutationFn: async (drawId: string) => {
+         const result = await executeDraw(drawId)
+         setTimeout(() => {
+            queryClient.invalidateQueries({ queryKey: DRAWS_QUERY_KEY })
+         }, 500)
+         return result
+      },
       onSuccess: () => {
          queryClient.invalidateQueries({ queryKey: DRAWS_QUERY_KEY })
          queryClient.invalidateQueries({ queryKey: PENDING_VERIFICATIONS_QUERY_KEY })

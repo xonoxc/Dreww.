@@ -11,7 +11,7 @@ import {
 import { AddScoreForm } from "@/features/golf/components/AddScoreForm"
 import { ScoresList } from "@/features/golf/components/ScoresList"
 import { useAuth } from "@/features"
-import { Navbar, StatCard, DrawSection, CharityImpact } from "./components"
+import { Navbar, StatCard, DrawSection, CharityImpact, WinnerNotification } from "./components"
 import { fromPromise } from "neverthrow"
 
 export function DashboardContent() {
@@ -113,6 +113,8 @@ export function DashboardContent() {
             </div>
 
             <DrawSection />
+
+            <WinnerNotification />
 
             <CharityImpact selectedCharityId={profile?.preferred_charity_id} />
          </div>
