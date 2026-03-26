@@ -12,8 +12,17 @@ import { AddScoreForm } from "@/features/golf/components/AddScoreForm"
 import { ScoresList } from "@/features/golf/components/ScoresList"
 import { useAuth } from "@/features"
 import { Navbar, StatCard, DrawSection, CharityImpact, WinnerNotification } from "./components"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { fromPromise } from "neverthrow"
-import { IconChartBar, IconTarget, IconTrophy, IconStar } from "@tabler/icons-react"
+import {
+   IconChartBar,
+   IconTarget,
+   IconTrophy,
+   IconStar,
+   IconList,
+   IconGift,
+   IconHeart,
+} from "@tabler/icons-react"
 
 export function DashboardContent() {
    const { user, loading: authLoading } = useAuth()
@@ -74,41 +83,77 @@ export function DashboardContent() {
 
          <Navbar userName={profile?.full_name} />
 
-         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-8">
-            <div className="grid md:grid-cols-4 gap-4 mb-8">
+         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-8 space-y-8">
+            {/* Stats - Always Visible */}
+            <div className="grid md:grid-cols-4 gap-4">
                {stats.map((stat, i) => (
                   <StatCard key={i} {...stat} />
                ))}
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-8">
-               <div className="lg:col-span-1">
-                  <AddScoreForm onSubmit={handleAddScore} loading={addScoreMutation.isPending} />
-               </div>
+            {/* Tabs */}
+            <Tabs defaultValue="scores" className="space-y-8">
+               <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
+                  <TabsTrigger value="scores" className="gap-2">
+                     <IconList className="w-4 h-4" />
+                     Scores
+                  </TabsTrigger>
+                  <TabsTrigger value="draws" className="gap-2">
+                     <IconTrophy className="w-4 h-4" />
+                     Draws
+                  </TabsTrigger>
+                  <TabsTrigger value="winners" className="gap-2">
+                     <IconGift className="w-4 h-4" />
+                     Winners
+                  </TabsTrigger>
+                  <TabsTrigger value="charity" className="gap-2">
+                     <IconHeart className="w-4 h-4" />
+                     Charity
+                  </TabsTrigger>
+               </TabsList>
 
-               <div className="lg:col-span-2">
-                  <div className="space-y-4">
-                     <div>
-                        <h2 className="text-2xl font-heavy text-foreground mb-2">Recent Scores</h2>
-                        <p className="text-sm text-muted-foreground font-normal-weight">
-                           Your last 5 rounds
-                        </p>
+               <TabsContent value="scores">
+                  <div className="grid lg:grid-cols-3 gap-8">
+                     <div className="lg:col-span-1">
+                        <AddScoreForm
+                           onSubmit={handleAddScore}
+                           loading={addScoreMutation.isPending}
+                        />
                      </div>
 
-                     <ScoresList
-                        scores={lastFiveScores}
-                        onDelete={handleDeleteScore}
-                        loading={profileLoading}
-                     />
+                     <div className="lg:col-span-2">
+                        <div className="space-y-4">
+                           <div>
+                              <h2 className="text-2xl font-heavy text-foreground mb-2">
+                                 Recent Scores
+                              </h2>
+                              <p className="text-sm text-muted-foreground font-normal-weight">
+                                 Your last 5 rounds
+                              </p>
+                           </div>
+
+                           <ScoresList
+                              scores={lastFiveScores}
+                              onDelete={handleDeleteScore}
+                              loading={profileLoading}
+                           />
+                        </div>
+                     </div>
                   </div>
-               </div>
-            </div>
+               </TabsContent>
 
-            <DrawSection />
+               <TabsContent value="draws">
+                  <DrawSection />
+               </TabsContent>
 
-            <WinnerNotification />
+               <TabsContent value="winners">
+                  <WinnerNotification />
+               </TabsContent>
 
-            <CharityImpact selectedCharityId={profile?.preferred_charity_id} />
+               <TabsContent value="charity">
+                  <CharityImpact selectedCharityId={profile?.preferred_charity_id} />
+               </TabsContent>
+            </Tabs>
          </div>
       </main>
    )

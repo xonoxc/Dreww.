@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth, useUserDrawResults } from "@/features"
 import { Button } from "@/components/ui/button"
@@ -15,18 +15,6 @@ export function WinnerNotification() {
    const [claimModalOpen, setClaimModalOpen] = useState(false)
    const [pendingClaim, setPendingClaim] = useState<any>(null)
 
-   useEffect(() => {
-      if (!isLoading && drawResults && user) {
-         const pending = drawResults.find(
-            (r: any) => r.status === "pending_verification" && !r.claimed_at
-         )
-         if (pending) {
-            setPendingClaim(pending)
-            setClaimModalOpen(true)
-         }
-      }
-   }, [drawResults, isLoading, user])
-
    if (isLoading || authLoading || !user) {
       return null
    }
@@ -36,7 +24,19 @@ export function WinnerNotification() {
    const verifiedWinners = drawResults?.filter((r: any) => r.status === "verified") || []
 
    if (verifiedWinners.length === 0 && pendingWinners.length === 0) {
-      return null
+      return (
+         <div className="p-6 border border-border rounded-lg bg-card/50">
+            <div className="flex items-center gap-3">
+               <IconTrophy className="w-6 h-6 text-muted-foreground" />
+               <div>
+                  <h2 className="text-xl font-bold">Your Wins</h2>
+                  <p className="text-sm text-muted-foreground">
+                     No wins yet. Participate in draws to win!
+                  </p>
+               </div>
+            </div>
+         </div>
+      )
    }
 
    return (
