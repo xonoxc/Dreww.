@@ -59,7 +59,12 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
    if (drawRes.isErr()) {
       console.error("Error fetching draw:", drawRes.error)
-      return NextResponse.json({ error: "draw not found" }, { status: 404 })
+      return NextResponse.json(
+         {
+            error: "draw not found",
+         },
+         { status: 404 }
+      )
    }
 
    const draw = drawRes.value.data as any
@@ -77,7 +82,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
    const participants = draw.draw_participants?.filter((p: any) => p.status === "active") || []
 
-   if (participants.length < 3) {
+   if (participants.length < 1) {
       return NextResponse.json(
          {
             error: "insufficient_participants",
@@ -100,7 +105,12 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
 
    if (scoresRes.isErr()) {
       console.error("Error fetching scores:", scoresRes.error)
-      return NextResponse.json({ error: "something went wrong" }, { status: 500 })
+      return NextResponse.json(
+         {
+            error: "something went wrong",
+         },
+         { status: 500 }
+      )
    }
 
    const scores = scoresRes.value.data || []
@@ -163,7 +173,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       const drawResult = drawResultRes.value.data as any
 
       ;(async () => {
-         await supabase
+         await (supabase as any)
             .from("draw_participants")
             .update({ status: "winner" })
             .eq("draw_id", drawId)
@@ -185,12 +195,10 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       winners.push(drawResult)
    }
 
-   ;(async () => {
-      await supabase
-         .from("draws")
-         .update({ status: "closed", closed_at: new Date().toISOString() })
-         .eq("id", drawId)
-   })()
+   await (supabase as any)
+      .from("draws")
+      .update({ status: "closed", closed_at: new Date().toISOString() })
+      .eq("id", drawId)
 
    return NextResponse.json({ success: true, winners })
 }

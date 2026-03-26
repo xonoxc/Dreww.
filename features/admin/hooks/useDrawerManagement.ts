@@ -39,12 +39,21 @@ const fetchDraws = async (): Promise<DrawForManagement[]> => {
 const fetchPendingVerifications = async (): Promise<WinnerForVerification[]> => {
    const { data, error } = await apiClient
       .from("draw_results")
-      .select("*")
-      .eq("admin_verified", false)
+      .select("*, profiles:profiles!draw_results_user_id_fkey(email)")
+      .eq("status", "pending_verification")
       .order("created_at", { ascending: false })
 
    if (error) throw error
-   return data || []
+
+   return (data || []).map((row: any) => ({
+      id: row.id,
+      draw_id: row.draw_id,
+      user_id: row.user_id,
+      position: row.position,
+      prize_amount: row.prize_amount,
+      admin_verified: row.status === "verified",
+      winner_email: row.profiles?.email || "",
+   }))
 }
 
 const createDraw = async (monthName: string, year: number, drawType: string) => {
@@ -104,8 +113,7 @@ const verifyWinner = async (resultId: string, approved: boolean) => {
    const { error } = await apiClient
       .from("draw_results")
       .update({
-         admin_verified: true,
-         verification_status: approved ? "approved" : "rejected",
+         status: approved ? "verified" : "cancelled",
          verified_at: new Date().toISOString(),
       })
       .eq("id", resultId)

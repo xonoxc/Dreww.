@@ -1,5 +1,5 @@
 import { TablesUpdate } from "@/lib/supabase/database.types"
-import { createServerSideClient, createAdminClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/server"
 import { fromPromise, fromThrowable } from "neverthrow"
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "node:crypto"

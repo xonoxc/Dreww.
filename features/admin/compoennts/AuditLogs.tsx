@@ -4,6 +4,23 @@ import { useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuditLogs } from "@/features/admin/hooks/useAuditLogs"
 
+const getActionColor = (action: string) => {
+   if (action.includes("create")) return "text-green-400"
+   if (action.includes("delete")) return "text-red-400"
+   if (action.includes("verify") || action.includes("approve")) return "text-blue-400"
+   if (action.includes("reject")) return "text-orange-400"
+   return "text-gray-400"
+}
+
+const getActionIcon = (action: string) => {
+   if (action.includes("create")) return "➕"
+   if (action.includes("delete")) return "🗑️"
+   if (action.includes("verify") || action.includes("approve")) return "✓"
+   if (action.includes("reject")) return "✗"
+   if (action.includes("draw")) return "🎲"
+   return "📋"
+}
+
 export function AuditLogs() {
    const { data: logs = [], isLoading: loading } = useAuditLogs()
    const [filter, setFilter] = useState("all")
@@ -97,21 +114,4 @@ export function AuditLogs() {
          </div>
       </div>
    )
-}
-
-const getActionColor = (action: string) => {
-   if (action.includes("create")) return "text-green-400"
-   if (action.includes("delete")) return "text-red-400"
-   if (action.includes("verify") || action.includes("approve")) return "text-blue-400"
-   if (action.includes("reject")) return "text-orange-400"
-   return "text-gray-400"
-}
-
-const getActionIcon = (action: string) => {
-   if (action.includes("create")) return "➕"
-   if (action.includes("delete")) return "🗑️"
-   if (action.includes("verify") || action.includes("approve")) return "✓"
-   if (action.includes("reject")) return "✗"
-   if (action.includes("draw")) return "🎲"
-   return "📋"
 }

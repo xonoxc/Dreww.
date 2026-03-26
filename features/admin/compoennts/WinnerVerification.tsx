@@ -13,9 +13,11 @@ const POSITION_LABELS = {
 }
 
 export function WinnerVerification() {
-   const { data: pendingWinners = [], isLoading: loading } = usePendingVerifications()
+   const { data: pendingWinners = [], isLoading: loading, error } = usePendingVerifications()
    const verifyWinnerMutation = useVerifyWinner()
    const [verifyingId, setVerifyingId] = useState<string | null>(null)
+
+   console.error("Pending winners error:", error)
 
    const handleApprove = async (winnerId: string) => {
       setVerifyingId(winnerId)

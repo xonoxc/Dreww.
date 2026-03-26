@@ -2,9 +2,9 @@ import { createServerSideClient } from "@/lib/supabase/server"
 import { fromPromise } from "neverthrow"
 import { NextResponse } from "next/server"
 
-export async function POST(_: Request, { params }: { params: { id: string } }) {
+export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const supabase = await createServerSideClient()
-   const drawId = params.id
+   const { id: drawId } = await params
 
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
 
@@ -33,7 +33,12 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
 
    if (profileRes.isErr()) {
       console.error("Error fetching profile:", profileRes.error)
-      return NextResponse.json({ error: "something went wrong" }, { status: 500 })
+      return NextResponse.json(
+         {
+            error: "something went wrong",
+         },
+         { status: 500 }
+      )
    }
 
    const profile = profileRes.value.data as {
@@ -43,7 +48,10 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
 
    if (profile?.subscription_tier === "free" || !profile?.subscription_tier) {
       return NextResponse.json(
-         { error: "subscription_required", message: "Upgrade to Premium or Elite to participate" },
+         {
+            error: "subscription_required",
+            message: "Upgrade to Premium or Elite to participate",
+         },
          { status: 403 }
       )
    }

@@ -40,6 +40,7 @@ export function DrawsManager() {
    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
    const [selectedType, setSelectedType] = useState("random")
+   const [executeError, setExecuteError] = useState<string | null>(null)
 
    const handleCreateDraw = async () => {
       await fromPromise(
@@ -53,8 +54,9 @@ export function DrawsManager() {
    }
 
    const handleExecuteDraw = async (drawId: string) => {
+      setExecuteError(null)
       await fromPromise(executeDrawMutation.mutateAsync(drawId), err =>
-         console.error("Execute draw error:", err)
+         setExecuteError(err.message || "Failed to execute draw")
       )
    }
 
@@ -66,6 +68,11 @@ export function DrawsManager() {
 
    return (
       <div className="space-y-6">
+         {executeError && (
+            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive text-destructive">
+               {executeError}
+            </div>
+         )}
          <div>
             <h3 className="text-xl font-bold tracking-tight">Monthly Draws Management</h3>
             <p className="text-sm text-muted-foreground">Create and manage monthly prize draws</p>

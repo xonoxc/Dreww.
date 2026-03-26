@@ -2,9 +2,9 @@ import { createServerSideClient } from "@/lib/supabase/server"
 import { fromPromise } from "neverthrow"
 import { NextResponse } from "next/server"
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
    const supabase = await createServerSideClient()
-   const drawResultId = params.id
+   const { id: drawResultId } = await params
 
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
 
@@ -50,13 +50,13 @@ export async function POST(request: Request, { params }: { params: { id: string 
    }
 
    const updateRes = await fromPromise(
-      supabase
+      (supabase as any)
          .from("draw_results")
          .update({
             proof_screenshot_url,
             winner_photo_url,
             claimed_at: new Date().toISOString(),
-         } as any)
+         })
          .eq("id", drawResultId),
       err => err
    )
