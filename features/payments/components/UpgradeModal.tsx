@@ -129,10 +129,7 @@ export function UpgradeModal({
          const orderData = order.data
 
          const options = {
-            key:
-               process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
-               process.env.NEXT_PUBLIC_RAZORPAY_KEY ||
-               "mock_key",
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
             amount: orderData.amount,
             currency: "INR",
             name: "Golf Dreww",
