@@ -41,7 +41,7 @@ export function WinnerNotification() {
 
    return (
       <>
-         <div className="p-6 border-2 border-accent rounded-lg bg-accent/5">
+         <div className="p-6 border rounded-lg">
             <div className="flex items-center gap-3 mb-4">
                <IconTrophy className="w-6 h-6 text-accent" />
                <h2 className="text-xl font-bold">Your Wins</h2>
@@ -61,7 +61,7 @@ export function WinnerNotification() {
                      <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-500/20">
                            {win.position === 1 ? (
-                              <IconMedal className="w-5 h-5 text-yellow-400" />
+                              <IconMedal className="w-5 h-5 text-yellow-400/10" />
                            ) : win.position === 2 ? (
                               <IconMedal className="w-5 h-5 text-gray-400" />
                            ) : (
@@ -97,7 +97,7 @@ export function WinnerNotification() {
                {pendingWinners.map((win: any) => (
                   <div
                      key={win.id}
-                     className="flex items-center justify-between p-4 bg-card rounded-lg border border-yellow-500/50"
+                     className="flex items-center justify-between p-4 bg-card border border-accent/30 rounded-lg"
                   >
                      <div className="flex items-center gap-3">
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-500/20">
@@ -117,25 +117,35 @@ export function WinnerNotification() {
                                    ? "2nd Place"
                                    : "3rd Place"}
                            </p>
-                           <p className="text-xs text-yellow-500 flex items-center gap-1">
-                              <IconUpload className="w-3 h-3" /> Awaiting Proof
-                           </p>
+                           {win.claimed_at ? (
+                              <p className="text-xs text-blue-500 flex items-center gap-1">
+                                 <IconCheck className="w-3 h-3" /> Proof Submitted
+                              </p>
+                           ) : (
+                              <p className="text-xs text-yellow-500 flex items-center gap-1">
+                                 <IconUpload className="w-3 h-3" /> Awaiting Proof
+                              </p>
+                           )}
                         </div>
                      </div>
                      <div className="text-right">
                         <p className="text-lg font-bold text-accent">
                            ₹{Number(win.prize_amount || 0).toLocaleString()}
                         </p>
-                        <Button
-                           size="sm"
-                           className="mt-1 bg-yellow-500 hover:bg-yellow-600"
-                           onClick={() => {
-                              setPendingClaim(win)
-                              setClaimModalOpen(true)
-                           }}
-                        >
-                           Upload Proof
-                        </Button>
+                        {win.claimed_at ? (
+                           <p className="text-xs text-muted-foreground mt-1">Under review</p>
+                        ) : (
+                           <Button
+                              size="sm"
+                              className="mt-1 bg-yellow-500 hover:bg-yellow-600"
+                              onClick={() => {
+                                 setPendingClaim(win)
+                                 setClaimModalOpen(true)
+                              }}
+                           >
+                              Upload Proof
+                           </Button>
+                        )}
                      </div>
                   </div>
                ))}

@@ -81,6 +81,10 @@ export function WinnerVerification() {
                winner={viewProofFor}
                open={!!viewProofFor}
                onOpenChange={() => setViewProofFor(null)}
+               onApprove={handleApprove}
+               onReject={handleReject}
+               verifyingId={verifyingId}
+               isVerifying={verifyWinnerMutation.isPending}
             />
          )}
       </div>
@@ -91,18 +95,26 @@ function ProofDialog({
    winner,
    open,
    onOpenChange,
+   onApprove,
+   onReject,
+   verifyingId,
+   isVerifying,
 }: {
    winner: any
    open: boolean
    onOpenChange: () => void
+   onApprove: (id: string) => void
+   onReject: (id: string) => void
+   verifyingId: string | null
+   isVerifying: boolean
 }) {
    return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-         <DialogContent className="max-w-2xl">
+         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
                <DialogTitle>Proof for {winner.winner_email}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
                {winner.proof_screenshot_url && (
                   <div>
                      <p className="font-medium mb-2 flex items-center gap-2">
@@ -111,7 +123,7 @@ function ProofDialog({
                      <img
                         src={winner.proof_screenshot_url}
                         alt="Score proof"
-                        className="w-full rounded-lg border"
+                        className="w-full rounded-lg border max-h-64 object-contain"
                      />
                   </div>
                )}
@@ -123,14 +135,35 @@ function ProofDialog({
                      <img
                         src={winner.winner_photo_url}
                         alt="Winner photo"
-                        className="w-full rounded-lg border"
+                        className="w-full rounded-lg border max-h-64 object-contain"
                      />
                   </div>
                )}
                {!winner.proof_screenshot_url && !winner.winner_photo_url && (
-                  <p className="text-muted-foreground">No proof submitted yet.</p>
+                  <p className="text-muted-foreground col-span-2">No proof submitted yet.</p>
                )}
             </div>
+            {winner.status === "pending_verification" && winner.claimed_at && (
+               <div className="flex gap-3 pt-4 border-t">
+                  <Button
+                     onClick={() => onApprove(winner.id)}
+                     disabled={verifyingId === winner.id || isVerifying}
+                     className="flex-1 bg-green-500 hover:bg-green-600"
+                  >
+                     <IconCheck className="w-4 h-4 mr-2" />
+                     Approve
+                  </Button>
+                  <Button
+                     onClick={() => onReject(winner.id)}
+                     disabled={verifyingId === winner.id || isVerifying}
+                     variant="outline"
+                     className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                  >
+                     <IconX className="w-4 h-4 mr-2" />
+                     Reject
+                  </Button>
+               </div>
+            )}
          </DialogContent>
       </Dialog>
    )
@@ -228,15 +261,26 @@ function PendingWinnerList({
                                  </p>
                               </div>
                            </div>
-                           {winner.claimed_at && (
+                           {winner.claimed_at && winner.proof_screenshot_url && (
                               <div className="mt-2 flex gap-2">
                                  <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => onViewProof(winner)}
                                  >
+                                    <IconCamera className="w-4 h-4 mr-1" />
                                     View Proof
                                  </Button>
+                              </div>
+                           )}
+                           {winner.claimed_at && !winner.proof_screenshot_url && (
+                              <div className="mt-2 text-xs text-yellow-500">
+                                 Proof submitted but images not found
+                              </div>
+                           )}
+                           {!winner.claimed_at && (
+                              <div className="mt-2 text-xs text-muted-foreground">
+                                 Waiting for winner to submit proof
                               </div>
                            )}
                         </div>

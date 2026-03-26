@@ -1,9 +1,10 @@
-import { createServerSideClient } from "@/lib/supabase/server"
+import { createServerSideClient, createAdminClient } from "@/lib/supabase/server"
 import { fromPromise } from "neverthrow"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
    const supabase = await createServerSideClient()
+   const adminClient = createAdminClient()
    const { id: drawResultId } = await params
 
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
@@ -50,12 +51,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
    }
 
    const updateRes = await fromPromise(
-      (supabase as any)
+      (adminClient as any)
          .from("draw_results")
          .update({
             proof_screenshot_url,
             winner_photo_url,
             claimed_at: new Date().toISOString(),
+            status: "pending_verification",
          })
          .eq("id", drawResultId),
       err => err

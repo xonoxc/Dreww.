@@ -1,9 +1,10 @@
-import { createAdminClient } from "@/lib/supabase/server"
+import { createServerSideClient, createAdminClient } from "@/lib/supabase/server"
 import { fromPromise } from "neverthrow"
 import { NextResponse } from "next/server"
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
-   const supabase = createAdminClient()
+   const supabase = await createServerSideClient()
+   const adminClient = createAdminClient()
    const { id: drawId } = await params
 
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
@@ -19,6 +20,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    } = userGetRes.value
 
    if (userError || !user) {
+      console.error("User error or no user:", userError)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
    }
 
@@ -83,7 +85,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    }
 
    const existingRes = await fromPromise(
-      (supabase as any)
+      (adminClient as any)
          .from("draw_participants")
          .select("*")
          .eq("draw_id", drawId)
@@ -93,7 +95,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       err => err
    )
 
-   if (existingRes.isOk() && existingRes.value.data) {
+   if (existingRes.isOk() && existingRes.value) {
       return NextResponse.json(
          { error: "already_participating", message: "You are already participating in this draw" },
          { status: 400 }
@@ -101,7 +103,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
    }
 
    const participateRes = await fromPromise(
-      (supabase as any)
+      (adminClient as any)
          .from("draw_participants")
          .insert({ draw_id: drawId, user_id: user.id, status: "active" })
          .select()
@@ -114,7 +116,7 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       return NextResponse.json({ error: "something went wrong" }, { status: 500 })
    }
 
-   const participation = participateRes.value.data
+   const participation = participateRes.value
 
    return NextResponse.json(participation, { status: 201 })
 }

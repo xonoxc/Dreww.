@@ -1,9 +1,10 @@
-import { createServerSideClient } from "@/lib/supabase/server"
+import { createServerSideClient, createAdminClient } from "@/lib/supabase/server"
 import { fromPromise } from "neverthrow"
 import { NextResponse } from "next/server"
 
 export async function POST(_: Request, { params }: { params: Promise<{ id: string }> }) {
    const supabase = await createServerSideClient()
+   const adminClient = createAdminClient()
    const { id: drawId } = await params
 
    const userGetRes = await fromPromise(supabase.auth.getUser(), err => err)
@@ -195,14 +196,21 @@ export async function POST(_: Request, { params }: { params: Promise<{ id: strin
       winners.push(drawResult)
    }
 
-   await (supabase as any)
-      .from("draws")
-      .update({
-         status: "closed",
-         closed_at: new Date().toISOString(),
-         completed_at: new Date().toISOString(),
-      })
-      .eq("id", drawId)
+   const updateRes = await fromPromise(
+      adminClient
+         .from("draws")
+         .update({
+            status: "closed",
+            closed_at: new Date().toISOString(),
+            completed_at: new Date().toISOString(),
+         })
+         .eq("id", drawId),
+      err => err
+   )
+
+   if (updateRes.isErr()) {
+      console.error("Error updating draw status:", updateRes.error)
+   }
 
    return NextResponse.json({ success: true, winners })
 }
