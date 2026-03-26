@@ -9,14 +9,19 @@ import { WinnerClaimModal } from "@/features/draws/components/WinnerClaimModal"
 import { IconTrophy, IconUpload, IconCheck, IconMedal } from "@tabler/icons-react"
 
 export function WinnerNotification() {
-   const router = useRouter()
    const { user, loading: authLoading } = useAuth()
    const { data: drawResults, isLoading } = useUserDrawResults()
    const [claimModalOpen, setClaimModalOpen] = useState(false)
    const [pendingClaim, setPendingClaim] = useState<any>(null)
 
-   if (isLoading || authLoading || !user) {
-      return null
+   if (authLoading || isLoading || !drawResults) {
+      return (
+         <div className="p-6 border border-border rounded-lg bg-card/50 flex items-center flex-col justify-center gap-2">
+            {[1, 2, 3].map(i => (
+               <div key={i} className="h-18 bg-neutral-500/10 rounded-lg border-2 w-full"></div>
+            ))}
+         </div>
+      )
    }
 
    const pendingWinners =

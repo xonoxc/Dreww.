@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/features"
 
 export default function Home() {
-   const { user, loading: authLoading } = useAuth()
+   const { user } = useAuth()
    const router = useRouter()
 
    const handlePricingClick = () => {

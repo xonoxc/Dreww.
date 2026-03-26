@@ -27,7 +27,7 @@ export function DrawSection() {
    const router = useRouter()
    const { user, loading: authLoading } = useAuth()
    const { data: profile } = useProfile()
-   const { data: draws } = useDraws()
+   const { data: draws, isLoading } = useDraws()
    const { data: participations } = useUserParticipations()
 
    const [participateOpen, setParticipateOpen] = useState(false)
@@ -74,14 +74,14 @@ export function DrawSection() {
       setUpgradeOpen(false)
    }
 
-   if (authLoading || !draws) {
+   if (authLoading || !draws || isLoading) {
       return (
          <div className="mt-12 p-8 border border-border rounded-lg bg-secondary/20">
             <div className="animate-pulse">
                <div className="h-8 bg-secondary rounded w-48 mb-4"></div>
                <div className="grid md:grid-cols-3 gap-6">
                   {[1, 2, 3].map(i => (
-                     <div key={i} className="h-32 bg-secondary rounded-lg"></div>
+                     <div key={i} className="h-32 bg-neutral-500/10 rounded-lg"></div>
                   ))}
                </div>
             </div>

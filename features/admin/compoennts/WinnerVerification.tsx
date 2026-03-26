@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { usePendingVerifications, useVerifyWinner } from "../hooks/useDrawerManagement"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fromPromise } from "neverthrow"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { IconCheck, IconX, IconCamera, IconUser, IconMedal } from "@tabler/icons-react"
-import { useDrawStatsStore } from "@/lib/stores/drawStatsStore"
 
 const POSITION_LABELS = {
    1: "1st Place",
@@ -55,8 +54,8 @@ export function WinnerVerification() {
    return (
       <div className="space-y-6">
          <div>
-            <h3 className="text-xl font-bold tracking-tight">Winner Verification</h3>
-            <p className="text-sm text-muted-foreground">
+            <h3 className="text-xl font-bold tracking-tight text-zinc-100">Winner Verification</h3>
+            <p className="text-sm text-zinc-400 mt-1">
                Review and approve/reject draw winners{" "}
                {pendingWinners.length > 0 && `(${pendingWinners.length})`}
             </p>
@@ -113,39 +112,41 @@ function ProofDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-               <DialogTitle>Proof for {winner.winner_email}</DialogTitle>
+               <DialogTitle className="font-mono">Proof for {winner.winner_email}</DialogTitle>
             </DialogHeader>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 mt-2">
                {winner.proof_screenshot_url && (
                   <div>
-                     <p className="font-medium mb-2 flex items-center gap-2">
+                     <p className="font-medium mb-2 flex items-center gap-2 text-sm text-zinc-300">
                         <IconCamera className="w-4 h-4" /> Score Screenshot
                      </p>
                      <img
                         src={winner.proof_screenshot_url}
                         alt="Score proof"
-                        className="w-full rounded-lg border max-h-64 object-contain"
+                        className="w-full rounded-lg border border-border max-h-64 object-contain bg-zinc-950/50"
                      />
                   </div>
                )}
                {winner.winner_photo_url && (
                   <div>
-                     <p className="font-medium mb-2 flex items-center gap-2">
+                     <p className="font-medium mb-2 flex items-center gap-2 text-sm text-zinc-300">
                         <IconUser className="w-4 h-4" /> Winner Photo
                      </p>
                      <img
                         src={winner.winner_photo_url}
                         alt="Winner photo"
-                        className="w-full rounded-lg border max-h-64 object-contain"
+                        className="w-full rounded-lg border border-border max-h-64 object-contain bg-zinc-950/50"
                      />
                   </div>
                )}
                {!winner.proof_screenshot_url && !winner.winner_photo_url && (
-                  <p className="text-muted-foreground col-span-2">No proof submitted yet.</p>
+                  <p className="text-zinc-500 col-span-2 py-8 text-center bg-zinc-900/30 rounded-lg border border-dashed border-border">
+                     No proof submitted yet.
+                  </p>
                )}
             </div>
             {winner.status === "pending_verification" && winner.claimed_at && (
-               <div className="flex gap-3 pt-4 border-t">
+               <div className="flex gap-3 pt-4 border-t border-border mt-4">
                   {winner.proof_screenshot_url || winner.winner_photo_url ? (
                      <>
                         <Button
@@ -154,7 +155,7 @@ function ProofDialog({
                               onOpenChange()
                            }}
                            disabled={verifyingId === winner.id || isVerifying}
-                           className="flex-1 bg-green-500 hover:bg-green-600"
+                           className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                         >
                            <IconCheck className="w-4 h-4 mr-2" />
                            Approve
@@ -165,8 +166,7 @@ function ProofDialog({
                               onOpenChange()
                            }}
                            disabled={verifyingId === winner.id || isVerifying}
-                           variant="outline"
-                           className="flex-1 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                           className="flex-1 bg-red-950/50 hover:bg-red-900 text-red-500 border-none"
                         >
                            <IconX className="w-4 h-4 mr-2" />
                            Reject
@@ -185,26 +185,26 @@ function ProofDialog({
 }
 
 const getPrizeColor = (amount: number) => {
-   if (amount >= 500) return "text-yellow-400"
-   if (amount >= 300) return "text-gray-300"
-   return "text-orange-400"
+   if (amount >= 500) return "text-yellow-400 border-yellow-400/30 bg-yellow-400/5"
+   if (amount >= 300) return "text-zinc-300 border-zinc-500/30 bg-zinc-500/5"
+   return "text-orange-500 border-orange-500/30 bg-orange-500/5"
 }
 
 function EmptyState() {
    return (
-      <div className="rounded-lg border border-border bg-card/50 p-8 text-center">
-         <p className="text-muted-foreground">
-            No pending verifications. All winners are verified!
-         </p>
+      <div className="rounded-lg border border-border bg-card/50 p-12 text-center flex flex-col items-center justify-center gap-2">
+         <IconMedal className="w-12 h-12 text-muted-foreground/30 mb-2" stroke={1.5} />
+         <h4 className="font-semibold text-lg text-zinc-200">No pending verifications</h4>
+         <p className="text-zinc-500 text-sm">All winners have been successfully verified!</p>
       </div>
    )
 }
 
 function LoadingState() {
    return (
-      <div className="space-y-3">
+      <div className="space-y-4">
          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-lg" />
+            <Skeleton key={i} className="h-32 rounded-lg border border-border bg-card/30" />
          ))}
       </div>
    )
@@ -229,108 +229,108 @@ function PendingWinnerList({
    const verified = pendingWinners.filter((w: any) => w.status === "verified")
 
    return (
-      <div className="space-y-6">
+      <div className="space-y-8">
          {pending.length > 0 && (
             <div>
-               <h4 className="font-semibold text-yellow-400 mb-3">
+               <h4 className="font-semibold text-yellow-500 mb-4 tracking-wide">
                   Pending Verification ({pending.length})
                </h4>
-               <div className="space-y-3">
+               <div className="space-y-4">
                   {pending.map((winner: any) => (
                      <div
                         key={winner.id}
-                        className="flex items-center justify-between rounded-lg border border-yellow-500/30 bg-card/50 p-4"
+                        className="flex flex-col gap-4 rounded-lg border border-yellow-500/20 bg-[#161616]/80 p-4 transition-colors hover:bg-[#161616]"
                      >
-                        <div className="flex-1">
+                        <div className="flex items-center justify-between">
                            <div className="flex items-center gap-4">
-                              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500/10 border border-yellow-500/30">
-                                 <IconMedal
-                                    className="w-6 h-6"
-                                    stroke={1.5}
-                                    color={
-                                       winner.position === 1
-                                          ? "#fbbf24"
-                                          : winner.position === 2
-                                            ? "#9ca3af"
-                                            : "#d97706"
-                                    }
-                                 />
+                              <div
+                                 className={`flex items-center justify-center w-12 h-12 rounded-full border ${
+                                    winner.position === 1
+                                       ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-500"
+                                       : winner.position === 2
+                                         ? "border-zinc-500/30 bg-zinc-500/10 text-zinc-400"
+                                         : "border-orange-500/30 bg-orange-500/10 text-orange-500"
+                                 }`}
+                              >
+                                 <IconMedal className="w-6 h-6" stroke={1.5} />
                               </div>
-                              <div className="flex-1">
-                                 <h5 className="font-bold">
+                              <div className="flex flex-col">
+                                 <h5 className="font-mono font-bold text-base text-zinc-100 mb-0.5">
                                     {
                                        POSITION_LABELS[
                                           winner.position as keyof typeof POSITION_LABELS
                                        ]
                                     }
                                  </h5>
-                                 <p className="text-sm text-muted-foreground">
+                                 <p className="font-mono text-sm text-zinc-400">
                                     {winner.winner_email}
                                  </p>
                               </div>
-                              <div className="text-right flex items-center justify-center border-2">
-                                 <p
-                                    className={`text-lg font-bold ${getPrizeColor(winner.prize_amount)}`}
-                                 >
-                                    ₹{winner.prize_amount.toLocaleString()}
-                                 </p>
-                              </div>
                            </div>
-                           {winner.claimed_at && winner.proof_screenshot_url && (
-                              <div className="mt-2 flex gap-2">
+
+                           <div className="flex items-center gap-6">
+                              <div
+                                 className={`font-mono font-bold border px-2.5 py-1 rounded text-base tracking-wider ${getPrizeColor(winner.prize_amount)}`}
+                              >
+                                 ₹{winner.prize_amount.toLocaleString()}
+                              </div>
+                              <div className="flex items-center gap-2">
                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => onViewProof(winner)}
+                                    onClick={() => handleApprove(winner.id)}
+                                    disabled={
+                                       verifyingId === winner.id || verifyWinnerMutation.isPending
+                                    }
+                                    className="bg-emerald-950 hover:bg-emerald-900 text-emerald-500 border-none shadow-none h-9 px-4"
                                  >
-                                    <IconCamera className="w-4 h-4 mr-1" />
-                                    View Proof
+                                    {verifyingId === winner.id ? (
+                                       "..."
+                                    ) : (
+                                       <>
+                                          <IconCheck className="w-4 h-4 mr-2" /> Approve
+                                       </>
+                                    )}
+                                 </Button>
+                                 <Button
+                                    onClick={() => handleReject(winner.id)}
+                                    disabled={
+                                       verifyingId === winner.id || verifyWinnerMutation.isPending
+                                    }
+                                    className="bg-red-950 hover:bg-red-900 text-red-500 border-none shadow-none h-9 px-4"
+                                 >
+                                    {verifyingId === winner.id ? (
+                                       "..."
+                                    ) : (
+                                       <>
+                                          <IconX className="w-4 h-4 mr-2" /> Reject
+                                       </>
+                                    )}
                                  </Button>
                               </div>
-                           )}
-                           {winner.claimed_at && !winner.proof_screenshot_url && (
-                              <div className="mt-2 text-xs text-yellow-500">
-                                 Proof submitted but images not found
-                              </div>
-                           )}
-                           {!winner.claimed_at && (
-                              <div className="mt-2 text-xs text-muted-foreground">
-                                 Waiting for winner to submit proof
-                              </div>
-                           )}
+                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 ml-4">
-                           <Button
-                              onClick={() => handleApprove(winner.id)}
-                              disabled={verifyingId === winner.id || verifyWinnerMutation.isPending}
-                              size="sm"
-                              className="bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
-                              variant="outline"
-                           >
-                              {verifyingId === winner.id ? (
-                                 "..."
-                              ) : (
-                                 <>
-                                    <IconCheck className="w-4 h-4 mr-1" /> Approve
-                                 </>
-                              )}
-                           </Button>
-                           <Button
-                              onClick={() => handleReject(winner.id)}
-                              disabled={verifyingId === winner.id || verifyWinnerMutation.isPending}
-                              size="sm"
-                              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
-                              variant="outline"
-                           >
-                              {verifyingId === winner.id ? (
-                                 "..."
-                              ) : (
-                                 <>
-                                    <IconX className="w-4 h-4 mr-1" /> Reject
-                                 </>
-                              )}
-                           </Button>
+                        <div className="mt-1">
+                           {winner.claimed_at && winner.proof_screenshot_url && (
+                              <Button
+                                 size="sm"
+                                 variant="outline"
+                                 onClick={() => onViewProof(winner)}
+                                 className="bg-transparent border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white font-mono h-8"
+                              >
+                                 <IconCamera className="w-4 h-4 mr-2" />
+                                 View Proof
+                              </Button>
+                           )}
+                           {winner.claimed_at && !winner.proof_screenshot_url && (
+                              <p className="font-mono text-sm text-yellow-500">
+                                 Proof submitted but images not found
+                              </p>
+                           )}
+                           {!winner.claimed_at && (
+                              <p className="font-mono text-sm text-zinc-400">
+                                 Waiting for winner to submit proof
+                              </p>
+                           )}
                         </div>
                      </div>
                   ))}
@@ -340,48 +340,51 @@ function PendingWinnerList({
 
          {verified.length > 0 && (
             <div>
-               <h4 className="font-semibold text-green-400 mb-3">Verified ({verified.length})</h4>
-               <div className="space-y-3">
+               <h4 className="font-semibold text-emerald-500 mb-4 tracking-wide">
+                  Verified ({verified.length})
+               </h4>
+               <div className="space-y-4">
                   {verified.map((winner: any) => (
                      <div
                         key={winner.id}
-                        className="flex items-center justify-between rounded-lg border border-green-500/30 bg-card/50 p-4"
+                        className="flex flex-col gap-4 rounded-lg border border-emerald-500/20 bg-[#161616]/80 p-4 transition-colors hover:bg-[#161616]"
                      >
-                        <div className="flex-1">
+                        <div className="flex items-center justify-between">
                            <div className="flex items-center gap-4">
-                              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500/10 border border-green-500/30">
-                                 <IconMedal
-                                    className="w-6 h-6"
-                                    stroke={1.5}
-                                    color={
-                                       winner.position === 1
-                                          ? "#fbbf24"
-                                          : winner.position === 2
-                                            ? "#9ca3af"
-                                            : "#d97706"
-                                    }
-                                 />
+                              <div
+                                 className={`flex items-center justify-center w-12 h-12 rounded-full border ${
+                                    winner.position === 1
+                                       ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-500"
+                                       : winner.position === 2
+                                         ? "border-zinc-500/30 bg-zinc-500/10 text-zinc-400"
+                                         : "border-orange-500/30 bg-orange-500/10 text-orange-500"
+                                 }`}
+                              >
+                                 <IconMedal className="w-6 h-6" stroke={1.5} />
                               </div>
-                              <div className="flex-1">
-                                 <h5 className="font-bold">
+                              <div className="flex flex-col">
+                                 <h5 className="font-mono font-bold text-base text-zinc-100 mb-0.5">
                                     {
                                        POSITION_LABELS[
                                           winner.position as keyof typeof POSITION_LABELS
                                        ]
                                     }
                                  </h5>
-                                 <p className="text-sm text-muted-foreground">
+                                 <p className="font-mono text-sm text-zinc-400">
                                     {winner.winner_email}
                                  </p>
                               </div>
-                              <div className="text-right">
-                                 <p
-                                    className={`text-lg font-bold ${getPrizeColor(winner.prize_amount)}`}
+                           </div>
+
+                           <div className="flex items-center gap-6 pr-2">
+                              <div className="flex flex-col items-end gap-1.5">
+                                 <div
+                                    className={`font-mono font-bold border px-2.5 py-1 rounded text-base tracking-wider ${getPrizeColor(winner.prize_amount)}`}
                                  >
                                     ₹{winner.prize_amount.toLocaleString()}
-                                 </p>
-                                 <p className="text-xs text-green-400 flex items-center gap-1">
-                                    <IconCheck className="w-3 h-3" /> Verified
+                                 </div>
+                                 <p className="font-mono text-xs text-emerald-500 flex items-center gap-1">
+                                    <IconCheck className="w-3.5 h-3.5" /> Verified
                                  </p>
                               </div>
                            </div>

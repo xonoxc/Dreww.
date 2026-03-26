@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fromPromise } from "neverthrow"
+import { toast } from "sonner"
 
 const MONTHS = [
    "January",
@@ -31,6 +32,21 @@ const DRAW_TYPES = [
    { value: "algorithmic", label: "Algorithmic (Score-Based)" },
 ]
 
+/** Turns a raw error (Supabase object or Error) into a readable string. */
+function parseError(err: unknown): string {
+   if (!err) return "An unexpected error occurred"
+   if (typeof err === "object" && err !== null) {
+      const e = err as Record<string, unknown>
+      // Supabase postgres error — unique constraint violation
+      if (e.code === "23505") {
+         return `A draw for ${MONTHS[new Date().getMonth()]} already exists. Choose a different month/year.`
+      }
+      if (typeof e.message === "string") return e.message
+   }
+   if (err instanceof Error) return err.message
+   return String(err)
+}
+
 export function DrawsManager() {
    const { data: draws = [], isLoading: loading } = useDraws()
    const createDrawMutation = useCreateDraw()
@@ -41,46 +57,54 @@ export function DrawsManager() {
    const [selectedType, setSelectedType] = useState("random")
    const [prizePool, setPrizePool] = useState<number>(10000)
    const [executingDrawId, setExecutingDrawId] = useState<string | null>(null)
-   const [executeError, setExecuteError] = useState<{ drawId: string; message: string } | null>(
-      null
-   )
 
    const handleCreateDraw = async () => {
-      await fromPromise(
+      const toastId = toast.loading("Creating draw…")
+      const result = await fromPromise(
          createDrawMutation.mutateAsync({
             month: MONTHS[selectedMonth],
             year: selectedYear,
             drawType: selectedType,
             prizePool,
          }),
-         err => console.error("Create draw error:", err)
+         err => err
       )
+
+      if (result.isErr()) {
+         toast.error(parseError(result.error), { id: toastId })
+      } else {
+         toast.success(`Draw for ${MONTHS[selectedMonth]} ${selectedYear} created!`, {
+            id: toastId,
+         })
+      }
    }
 
    const handleExecuteDraw = async (drawId: string) => {
-      setExecuteError(null)
       setExecutingDrawId(drawId)
-      await fromPromise(executeDrawMutation.mutateAsync(drawId), err => {
-         console.error("Execute draw error:", err)
-         setExecuteError("Failed to execute draw")
-      })
+      const toastId = toast.loading("Executing draw…")
+      const result = await fromPromise(executeDrawMutation.mutateAsync(drawId), err => err)
 
+      if (result.isErr()) {
+         toast.error(parseError(result.error), { id: toastId })
+      } else {
+         toast.success("Draw executed — winners selected!", { id: toastId })
+      }
       setExecutingDrawId(null)
    }
 
    const handleCompleteDraw = async (drawId: string) => {
-      await fromPromise(completeDrawMutation.mutateAsync(drawId), err =>
-         console.error("Complete draw error:", err)
-      )
+      const toastId = toast.loading("Completing draw…")
+      const result = await fromPromise(completeDrawMutation.mutateAsync(drawId), err => err)
+
+      if (result.isErr()) {
+         toast.error(parseError(result.error), { id: toastId })
+      } else {
+         toast.success("Draw marked as completed!", { id: toastId })
+      }
    }
 
    return (
       <div className="space-y-6">
-         {executeError && (
-            <div className="p-4 rounded-lg bg-destructive/10 border border-destructive text-destructive">
-               {executeError}
-            </div>
-         )}
          <div>
             <h3 className="text-xl font-bold tracking-tight">Monthly Draws Management</h3>
             <p className="text-sm text-muted-foreground">Create and manage monthly prize draws</p>
@@ -90,7 +114,7 @@ export function DrawsManager() {
          <div className="rounded-lg border border-border bg-card p-6">
             <h4 className="font-bold mb-4">Create New Draw</h4>
 
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-5">
                <div>
                   <label className="block text-sm font-medium mb-2">Month</label>
                   <select
@@ -131,13 +155,23 @@ export function DrawsManager() {
                   </select>
                </div>
 
+               <div>
+                  <label className="block text-sm font-medium mb-2">Prize Pool (₹)</label>
+                  <input
+                     type="number"
+                     value={prizePool}
+                     onChange={e => setPrizePool(parseInt(e.target.value) || 0)}
+                     className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                  />
+               </div>
+
                <div className="flex items-end">
                   <Button
                      onClick={handleCreateDraw}
                      disabled={createDrawMutation.isPending}
                      className="w-full bg-accent hover:bg-accent/90"
                   >
-                     {createDrawMutation.isPending ? "Creating..." : "Create Draw"}
+                     {createDrawMutation.isPending ? "Creating…" : "Create Draw"}
                   </Button>
                </div>
             </div>
@@ -145,7 +179,7 @@ export function DrawsManager() {
 
          {/* Draws List */}
          <div className="space-y-3">
-            <h4 className="font-bold">Active & Recent Draws</h4>
+            <h4 className="font-bold">Active &amp; Recent Draws</h4>
 
             {loading ? (
                <div className="space-y-3">
@@ -167,7 +201,7 @@ export function DrawsManager() {
                                     {draw.month} {draw.year}
                                  </h5>
                                  <p className="text-sm text-muted-foreground">
-                                    {draw.eligible_users_count} participants • $
+                                    {draw.eligible_users_count} participants • ₹
                                     {draw.prize_pool.toLocaleString()}
                                  </p>
                               </div>
@@ -191,7 +225,7 @@ export function DrawsManager() {
                                  }
                               >
                                  {executeDrawMutation.isPending && executingDrawId === draw.id
-                                    ? "..."
+                                    ? "Running…"
                                     : "Execute Draw"}
                               </Button>
                            )}
@@ -203,7 +237,7 @@ export function DrawsManager() {
                                  className="bg-accent hover:bg-accent/90"
                                  disabled={completeDrawMutation.isPending}
                               >
-                                 {completeDrawMutation.isPending ? "..." : "Complete"}
+                                 {completeDrawMutation.isPending ? "…" : "Complete"}
                               </Button>
                            )}
                         </div>
