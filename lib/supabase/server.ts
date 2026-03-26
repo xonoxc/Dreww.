@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { createClient as createSupabaseAdminClient } from "@supabase/supabase-js"
 import { cookies } from "next/headers"
 import { Database } from "@/lib/supabase/database.types"
 
@@ -22,6 +23,13 @@ export const createServerSideClient = async () => {
             },
          },
       }
+   )
+}
+
+export const createAdminClient = () => {
+   return createSupabaseAdminClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
    )
 }
 

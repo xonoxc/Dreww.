@@ -40,9 +40,7 @@ export function SignIn() {
       <div className="w-full max-w-md mx-auto space-y-6">
          <div className="space-y-2 text-center">
             <h1 className="text-3xl font-heavy text-foreground">Welcome Back</h1>
-            <p className="text-muted-foreground font-normal-weight">
-               Sign in to your Golf Fair account
-            </p>
+            <p className="text-muted-foreground font-normal-weight">Sign in to your account</p>
          </div>
 
          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

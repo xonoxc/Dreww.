@@ -1,5 +1,5 @@
 import { TablesUpdate } from "@/lib/supabase/database.types"
-import { createServerSideClient } from "@/lib/supabase/server"
+import { createServerSideClient, createAdminClient } from "@/lib/supabase/server"
 import { fromPromise, fromThrowable } from "neverthrow"
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "node:crypto"
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       )
    }
 
-   const supabase = await createServerSideClient()
+   const supabase = createAdminClient()
 
    const now = new Date()
    const subscriptionEnd = new Date()

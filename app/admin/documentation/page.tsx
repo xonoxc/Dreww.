@@ -3,9 +3,7 @@ export default function AdminDocumentationPage() {
       <div className="space-y-8 max-w-4xl">
          <div>
             <h1 className="text-3xl font-bold mb-2">Admin Documentation</h1>
-            <p className="text-muted-foreground">
-               Complete guide to managing the Golf Fair platform
-            </p>
+            <p className="text-muted-foreground">Complete guide to managing the Dreww. platform</p>
          </div>
 
          {/* Dashboard Overview */}

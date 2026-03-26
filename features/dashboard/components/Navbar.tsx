@@ -14,10 +14,10 @@ export function Navbar({ userName }: NavbarProps) {
       <nav className="sticky top-0 z-20 border-b border-border backdrop-blur-sm bg-background/80">
          <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
-               <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-                  <span className="text-accent-foreground font-heavy text-lg">⛳</span>
+               <div className="flex items-center gap-4">
+                  <div className="w-4 h-4 bg-accent" />
+                  <span className="text-xl font-bold tracking-tighter uppercase">Dreww</span>
                </div>
-               <span className="text-xl font-heavy text-foreground">Golf Fair</span>
             </div>
 
             <div className="flex items-center gap-4">

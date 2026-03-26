@@ -1,4 +1,4 @@
-# Golf Fair - Premium Golf Charity Platform
+# Dreww. - Premium Golf Charity Platform
 
 A fintech/web3-inspired golf scoring and charity platform with monthly draws, Stableford score tracking, and automated charity contributions.
 

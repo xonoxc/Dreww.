@@ -4,7 +4,7 @@ import { Database } from "@/lib/supabase/database.types"
 import SignOutBtn from "@/features/auth/components/SignOutBtn"
 
 export const metadata = {
-   title: "Admin Dashboard - Golf Fair",
+   title: "Admin Dashboard - Dreww.",
    description: "Admin panel for managing draws, winners, and platform statistics",
 }
 

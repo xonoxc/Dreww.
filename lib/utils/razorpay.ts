@@ -103,7 +103,7 @@ export const generateMockPaymentReceipt = (
       amount_refunded: 0,
       refund_status: null,
       captured: true,
-      description: `Golf Fair ${tier} tier subscription`,
+      description: `Dreww. ${tier} tier subscription`,
       card_id: `card_${crypto.randomBytes(8).toString("hex")}`,
       bank: null,
       wallet: null,

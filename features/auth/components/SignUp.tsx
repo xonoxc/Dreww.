@@ -38,7 +38,7 @@ export function SignUp() {
    return (
       <div className="w-full max-w-md mx-auto space-y-6">
          <div className="space-y-2 text-center">
-            <h1 className="text-3xl font-heavy text-foreground">Join Golf Fair</h1>
+            <h1 className="text-3xl font-heavy text-foreground">Join Dreww.</h1>
             <p className="text-muted-foreground font-normal-weight">
                Create your account and start playing
             </p>
