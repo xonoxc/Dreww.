@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useIsParticipating } from "../hooks/useUserDraws"
+import { IconCheck } from "@tabler/icons-react"
 
 interface Draw {
    id: string
@@ -100,7 +101,7 @@ export function DrawCard({
                                  className="w-full border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
                                  disabled
                               >
-                                 ✓ Participating
+                                 <IconCheck className="w-4 h-4 mr-1" /> Participating
                               </Button>
                               <Button
                                  variant="ghost"

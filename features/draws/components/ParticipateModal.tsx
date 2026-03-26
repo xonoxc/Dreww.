@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/features"
 import { useParticipateInDraw, useLeaveDraw } from "../hooks/useDrawParticipation"
 import { useRouter } from "next/navigation"
+import { IconTarget } from "@tabler/icons-react"
 
 interface ParticipateModalProps {
    open: boolean
@@ -90,7 +91,7 @@ export function ParticipateModal({
             <div className="space-y-4 py-4">
                <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary/50">
                   <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                     <span className="text-accent">🎯</span>
+                     <IconTarget className="w-5 h-5 text-accent" />
                   </div>
                   <div>
                      <p className="font-medium">Ready to participate?</p>

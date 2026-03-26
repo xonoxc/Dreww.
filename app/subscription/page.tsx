@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth, useProfile, UpgradeModal } from "@/features"
 import { Button } from "@/components/ui/button"
+import { IconCheck } from "@tabler/icons-react"
 
 interface PricingPlan {
    tier: "free" | "premium" | "elite"
@@ -119,7 +120,7 @@ export default function SubscriptionPage() {
                      <ul className="space-y-3 mb-8 grow">
                         {plan.features.map((feature, i) => (
                            <li key={i} className="text-sm flex items-start gap-2">
-                              <span className="text-accent">✓</span>
+                              <IconCheck className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                               {feature}
                            </li>
                         ))}

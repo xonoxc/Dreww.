@@ -13,6 +13,7 @@ import { ScoresList } from "@/features/golf/components/ScoresList"
 import { useAuth } from "@/features"
 import { Navbar, StatCard, DrawSection, CharityImpact, WinnerNotification } from "./components"
 import { fromPromise } from "neverthrow"
+import { IconChartBar, IconTarget, IconTrophy, IconStar } from "@tabler/icons-react"
 
 export function DashboardContent() {
    const { user, loading: authLoading } = useAuth()
@@ -61,10 +62,10 @@ export function DashboardContent() {
       scores && scores.length > 0 ? Math.max(...scores.map(s => s.stableford_score)) : 0
 
    const stats = [
-      { label: "Average Score", value: averageScore, icon: "📊" },
-      { label: "Total Rounds", value: scores?.length ?? 0, icon: "🎯" },
-      { label: "Best Score", value: bestScore, icon: "🏆" },
-      { label: "Subscription", value: profile?.subscription_tier || "Free", icon: "⭐" },
+      { label: "Average Score", value: averageScore, icon: IconChartBar },
+      { label: "Total Rounds", value: scores?.length ?? 0, icon: IconTarget },
+      { label: "Best Score", value: bestScore, icon: IconTrophy },
+      { label: "Subscription", value: profile?.subscription_tier || "Free", icon: IconStar },
    ]
 
    return (
@@ -74,15 +75,6 @@ export function DashboardContent() {
          <Navbar userName={profile?.full_name} />
 
          <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 py-8">
-            <div className="mb-8">
-               <h1 className="text-4xl font-heavy text-foreground mb-2">
-                  Welcome, {profile?.full_name?.split(" ")[0]}!
-               </h1>
-               <p className="text-muted-foreground font-normal-weight">
-                  Track your scores and compete in monthly draws
-               </p>
-            </div>
-
             <div className="grid md:grid-cols-4 gap-4 mb-8">
                {stats.map((stat, i) => (
                   <StatCard key={i} {...stat} />

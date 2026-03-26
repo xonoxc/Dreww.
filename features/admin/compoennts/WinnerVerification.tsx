@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fromPromise } from "neverthrow"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { IconCheck, IconX, IconCamera, IconUser, IconMedal } from "@tabler/icons-react"
 
 const POSITION_LABELS = {
    1: "1st Place",
@@ -104,7 +105,9 @@ function ProofDialog({
             <div className="space-y-4">
                {winner.proof_screenshot_url && (
                   <div>
-                     <p className="font-medium mb-2">📸 Score Screenshot</p>
+                     <p className="font-medium mb-2 flex items-center gap-2">
+                        <IconCamera className="w-4 h-4" /> Score Screenshot
+                     </p>
                      <img
                         src={winner.proof_screenshot_url}
                         alt="Score proof"
@@ -114,7 +117,9 @@ function ProofDialog({
                )}
                {winner.winner_photo_url && (
                   <div>
-                     <p className="font-medium mb-2">📷 Winner Photo</p>
+                     <p className="font-medium mb-2 flex items-center gap-2">
+                        <IconUser className="w-4 h-4" /> Winner Photo
+                     </p>
                      <img
                         src={winner.winner_photo_url}
                         alt="Winner photo"
@@ -191,13 +196,17 @@ function PendingWinnerList({
                         <div className="flex-1">
                            <div className="flex items-center gap-4">
                               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-500/10 border border-yellow-500/30">
-                                 <span className="font-bold text-yellow-400">
-                                    {winner.position === 1
-                                       ? "🥇"
-                                       : winner.position === 2
-                                         ? "🥈"
-                                         : "🥉"}
-                                 </span>
+                                 <IconMedal
+                                    className="w-6 h-6"
+                                    stroke={1.5}
+                                    color={
+                                       winner.position === 1
+                                          ? "#fbbf24"
+                                          : winner.position === 2
+                                            ? "#9ca3af"
+                                            : "#d97706"
+                                    }
+                                 />
                               </div>
                               <div className="flex-1">
                                  <h5 className="font-bold">
@@ -240,7 +249,13 @@ function PendingWinnerList({
                               className="bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/30"
                               variant="outline"
                            >
-                              {verifyingId === winner.id ? "..." : "✓ Approve"}
+                              {verifyingId === winner.id ? (
+                                 "..."
+                              ) : (
+                                 <>
+                                    <IconCheck className="w-4 h-4 mr-1" /> Approve
+                                 </>
+                              )}
                            </Button>
                            <Button
                               onClick={() => handleReject(winner.id)}
@@ -249,7 +264,13 @@ function PendingWinnerList({
                               className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
                               variant="outline"
                            >
-                              {verifyingId === winner.id ? "..." : "✗ Reject"}
+                              {verifyingId === winner.id ? (
+                                 "..."
+                              ) : (
+                                 <>
+                                    <IconX className="w-4 h-4 mr-1" /> Reject
+                                 </>
+                              )}
                            </Button>
                         </div>
                      </div>
@@ -270,13 +291,17 @@ function PendingWinnerList({
                         <div className="flex-1">
                            <div className="flex items-center gap-4">
                               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500/10 border border-green-500/30">
-                                 <span className="font-bold text-green-400">
-                                    {winner.position === 1
-                                       ? "🥇"
-                                       : winner.position === 2
-                                         ? "🥈"
-                                         : "🥉"}
-                                 </span>
+                                 <IconMedal
+                                    className="w-6 h-6"
+                                    stroke={1.5}
+                                    color={
+                                       winner.position === 1
+                                          ? "#fbbf24"
+                                          : winner.position === 2
+                                            ? "#9ca3af"
+                                            : "#d97706"
+                                    }
+                                 />
                               </div>
                               <div className="flex-1">
                                  <h5 className="font-bold">
@@ -296,7 +321,9 @@ function PendingWinnerList({
                                  >
                                     ₹{winner.prize_amount.toLocaleString()}
                                  </p>
-                                 <p className="text-xs text-green-400">✓ Verified</p>
+                                 <p className="text-xs text-green-400 flex items-center gap-1">
+                                    <IconCheck className="w-3 h-3" /> Verified
+                                 </p>
                               </div>
                            </div>
                         </div>

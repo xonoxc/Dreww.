@@ -2,6 +2,14 @@
 
 import { AdminStats, useAdminStats } from "../hooks/useAdmin"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+   IconUsers,
+   IconTicket,
+   IconCoins,
+   IconDice,
+   IconCheck,
+   IconHeartHandshake,
+} from "@tabler/icons-react"
 
 export function AdminOverview() {
    const { data: stats, isLoading: loading } = useAdminStats()
@@ -12,11 +20,6 @@ export function AdminOverview() {
 
    return (
       <div className="space-y-6">
-         <div>
-            <h2 className="text-2xl font-bold tracking-tight">Dashboard Overview</h2>
-            <p className="text-muted-foreground">Real-time platform statistics and key metrics</p>
-         </div>
-
          <div className="grid gap-4 md:grid-cols-5">
             {statCards.map((card, i) => (
                <div
@@ -48,31 +51,31 @@ function getStatsCards(stats?: AdminStats) {
          label: "Total Users",
          value: stats?.totalUsers ?? 0,
          change: "+12%",
-         icon: "👥",
+         icon: <IconUsers className="w-5 h-5" />,
       },
       {
          label: "Total Scores",
          value: stats?.totalScores ?? 0,
          change: "+8%",
-         icon: "⛳",
+         icon: <IconTicket className="w-5 h-5" />,
       },
       {
          label: "Charity Funds",
          value: `$${(stats?.totalCharityFunds ?? 0).toLocaleString()}`,
          change: "+24%",
-         icon: "🤝",
+         icon: <IconHeartHandshake className="w-5 h-5" />,
       },
       {
          label: "Active Draws",
          value: stats?.activeDraws ?? 0,
          change: "This Month",
-         icon: "🎲",
+         icon: <IconDice className="w-5 h-5" />,
       },
       {
          label: "Pending Verifications",
          value: stats?.pendingVerifications ?? 0,
          change: "Action Required",
-         icon: "✓",
+         icon: <IconCheck className="w-5 h-5" />,
       },
    ]
 }

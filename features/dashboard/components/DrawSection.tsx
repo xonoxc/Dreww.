@@ -6,6 +6,7 @@ import { useAuth, useProfile, useDraws, useUserParticipations } from "@/features
 import { Button } from "@/components/ui/button"
 import { ParticipateModal } from "@/features/draws/components/ParticipateModal"
 import { UpgradeModal } from "@/features/payments/components/UpgradeModal"
+import { IconCheck } from "@tabler/icons-react"
 
 const MONTHS = [
    "January",
@@ -128,11 +129,15 @@ export function DrawSection() {
                         : "bg-accent hover:bg-accent/90"
                   }
                >
-                  {isParticipating
-                     ? "✓ Participating"
-                     : isEligible
-                       ? "Participate"
-                       : "Upgrade to Participate"}
+                  {isParticipating ? (
+                     <span className="flex items-center gap-1">
+                        <IconCheck className="w-4 h-4" /> Participating
+                     </span>
+                  ) : isEligible ? (
+                     "Participate"
+                  ) : (
+                     "Upgrade to Participate"
+                  )}
                </Button>
             )}
          </div>

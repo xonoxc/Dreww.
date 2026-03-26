@@ -5,6 +5,7 @@ import { useCharities } from "../hooks/useCharities"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { fromPromise } from "neverthrow"
+import { IconCheck } from "@tabler/icons-react"
 
 interface CharitySelectorProps {
    onSelect: (charityId: string) => Promise<void>
@@ -94,7 +95,7 @@ export const CharitySelector = ({ onSelect, selectedId }: CharitySelectorProps) 
                            </p>
                         </div>
                         {selectedCharityId === charity.id && (
-                           <div className="text-accent font-heavy">✓</div>
+                           <IconCheck className="w-5 h-5 text-accent" />
                         )}
                      </div>
                   </button>

@@ -1,13 +1,15 @@
 "use client"
 
 import { Suspense } from "react"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AdminOverview } from "@/features/admin/compoennts/AdminOverview"
 import { DrawsManager } from "@/features/admin/compoennts/DrawsManager"
 import { WinnerVerification } from "@/features/admin/compoennts/WinnerVerification"
 import { AuditLogs } from "@/features/admin/compoennts/AuditLogs"
+import { IconLayoutDashboard, IconTrophy, IconHistory, IconUsers } from "@tabler/icons-react"
 import Link from "next/link"
-import SignOutBtn from "@/features/auth/components/SignOutBtn"
+import { Button } from "@/components/ui/button"
 
 function OverviewSkeleton() {
    return (
@@ -30,70 +32,65 @@ function SectionSkeleton() {
 
 export default function AdminPage() {
    return (
-      <div className="space-y-12">
-         {/* Overview Cards */}
+      <div className="space-y-8">
+         {/* Overview - Always Visible */}
          <Suspense fallback={<OverviewSkeleton />}>
             <AdminOverview />
          </Suspense>
 
-         {/* Two Column Layout */}
-         <div className="grid gap-12 lg:grid-cols-2">
-            {/* Draws Manager */}
-            <Suspense fallback={<SectionSkeleton />}>
-               <DrawsManager />
-            </Suspense>
+         {/* Tabs */}
+         <Tabs defaultValue="overview" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-flex">
+               <TabsTrigger value="overview" className="gap-2">
+                  <IconLayoutDashboard className="w-4 h-4" />
+                  Overview
+               </TabsTrigger>
+               <TabsTrigger value="winners" className="gap-2">
+                  <IconTrophy className="w-4 h-4" />
+                  Winners
+               </TabsTrigger>
+               <TabsTrigger value="audit" className="gap-2">
+                  <IconHistory className="w-4 h-4" />
+                  Audit Logs
+               </TabsTrigger>
+               <TabsTrigger value="users" className="gap-2">
+                  <IconUsers className="w-4 h-4" />
+                  Users
+               </TabsTrigger>
+            </TabsList>
 
-            {/* Winner Verification */}
-            <Suspense fallback={<SectionSkeleton />}>
-               <WinnerVerification />
-            </Suspense>
-         </div>
+            <TabsContent value="overview">
+               <Suspense fallback={<SectionSkeleton />}>
+                  <DrawsManager />
+               </Suspense>
+            </TabsContent>
 
-         {/* Audit Logs */}
-         <Suspense fallback={<SectionSkeleton />}>
-            <AuditLogs />
-         </Suspense>
+            <TabsContent value="winners">
+               <Suspense fallback={<SectionSkeleton />}>
+                  <WinnerVerification />
+               </Suspense>
+            </TabsContent>
 
-         {/* Admin Resources */}
-         <div className="rounded-lg border border-border bg-card/30 p-6">
-            <h3 className="text-lg font-bold mb-4">Admin Resources</h3>
-            <div className="grid gap-4 md:grid-cols-3">
-               <Link
-                  href="/admin/documentation"
-                  className="group flex items-start gap-3 p-4 rounded-lg border border-border hover:border-accent hover:bg-card/50 transition-all"
-               >
-                  <span className="text-2xl">📚</span>
-                  <div>
-                     <h4 className="font-bold group-hover:text-accent">Admin Documentation</h4>
-                     <p className="text-sm text-muted-foreground">
-                        Complete guide to admin features
-                     </p>
+            <TabsContent value="audit">
+               <Suspense fallback={<SectionSkeleton />}>
+                  <AuditLogs />
+               </Suspense>
+            </TabsContent>
+
+            <TabsContent value="users">
+               <div className="rounded-lg border border-border bg-card/30 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                     <div>
+                        <h3 className="text-lg font-bold">User Management</h3>
+                        <p className="text-sm text-muted-foreground">Manage platform users</p>
+                     </div>
+                     <Button asChild variant="outline">
+                        <Link href="/admin/user-management">Open User Management</Link>
+                     </Button>
                   </div>
-               </Link>
-
-               <Link
-                  href="/admin/user-management"
-                  className="group flex items-start gap-3 p-4 rounded-lg border border-border hover:border-accent hover:bg-card/50 transition-all"
-               >
-                  <span className="text-2xl">👥</span>
-                  <div>
-                     <h4 className="font-bold group-hover:text-accent">User Management</h4>
-                     <p className="text-sm text-muted-foreground">Manage platform users</p>
-                  </div>
-               </Link>
-
-               <Link
-                  href="/admin/system-settings"
-                  className="group flex items-start gap-3 p-4 rounded-lg border border-border hover:border-accent hover:bg-card/50 transition-all"
-               >
-                  <span className="text-2xl">⚙️</span>
-                  <div>
-                     <h4 className="font-bold group-hover:text-accent">System Settings</h4>
-                     <p className="text-sm text-muted-foreground">Configure platform settings</p>
-                  </div>
-               </Link>
-            </div>
-         </div>
+               </div>
+            </TabsContent>
+         </Tabs>
       </div>
    )
 }

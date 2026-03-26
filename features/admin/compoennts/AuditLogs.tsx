@@ -3,6 +3,14 @@
 import { useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuditLogs } from "@/features/admin/hooks/useAuditLogs"
+import {
+   IconPlus,
+   IconTrash,
+   IconCheck,
+   IconX,
+   IconDice,
+   IconClipboardList,
+} from "@tabler/icons-react"
 
 const getActionColor = (action: string) => {
    if (action.includes("create")) return "text-green-400"
@@ -13,12 +21,13 @@ const getActionColor = (action: string) => {
 }
 
 const getActionIcon = (action: string) => {
-   if (action.includes("create")) return "➕"
-   if (action.includes("delete")) return "🗑️"
-   if (action.includes("verify") || action.includes("approve")) return "✓"
-   if (action.includes("reject")) return "✗"
-   if (action.includes("draw")) return "🎲"
-   return "📋"
+   if (action.includes("create")) return <IconPlus className="w-5 h-5" />
+   if (action.includes("delete")) return <IconTrash className="w-5 h-5" />
+   if (action.includes("verify") || action.includes("approve"))
+      return <IconCheck className="w-5 h-5 text-blue-400" />
+   if (action.includes("reject")) return <IconX className="w-5 h-5" />
+   if (action.includes("draw")) return <IconDice className="w-5 h-5" />
+   return <IconClipboardList className="w-5 h-5" />
 }
 
 export function AuditLogs() {

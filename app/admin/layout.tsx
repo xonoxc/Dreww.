@@ -2,6 +2,8 @@ import { redirect } from "next/navigation"
 import { createServerSideClient } from "@/lib/supabase/server"
 import { Database } from "@/lib/supabase/database.types"
 import SignOutBtn from "@/features/auth/components/SignOutBtn"
+import Link from "next/link"
+import { Logo } from "@/features/dashboard/components/Logo"
 
 export const metadata = {
    title: "Admin Dashboard - Dreww.",
@@ -33,13 +35,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
          <div className="border-b border-border">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                <div className="flex items-center justify-between">
-                  <div>
-                     <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-                     <p className="text-sm text-muted-foreground mt-1">
-                        Platform management and monitoring
-                     </p>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
+                  <Link href="/dashboard" className="hover:opacity-80 transition-opacity">
+                     <Logo />
+                  </Link>
+
+                  <div className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                     Welcome,
                      <span className="font-medium text-foreground">{user.email}</span>
                      <SignOutBtn />
                   </div>

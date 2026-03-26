@@ -15,6 +15,7 @@ import { TIER_PRICING } from "@/lib/utils/razorpay"
 import { useQueryClient } from "@tanstack/react-query"
 import { apiClient } from "@/lib/supabase/client"
 import axios from "axios"
+import { IconHeartHandshake, IconHeart } from "@tabler/icons-react"
 
 interface UpgradeModalProps {
    open: boolean
@@ -230,7 +231,9 @@ export function UpgradeModal({
                )}
 
                <div>
-                  <label className="text-sm font-medium mb-2 block">🎗️ Support a Charity</label>
+                  <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                     <IconHeartHandshake className="w-4 h-4" /> Support a Charity
+                  </label>
                   <button
                      onClick={() => setShowCharitySelector(!showCharitySelector)}
                      className="w-full p-3 border border-border rounded-lg text-left hover:border-accent transition-colors"
@@ -277,8 +280,8 @@ export function UpgradeModal({
 
                {selectedCharity && (
                   <div>
-                     <label className="text-sm font-medium mb-2 block">
-                        💝 Donation Percentage: {charityPercentage}%
+                     <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                        <IconHeart className="w-4 h-4" /> Donation Percentage: {charityPercentage}%
                      </label>
                      <div className="space-y-2">
                         <Slider
